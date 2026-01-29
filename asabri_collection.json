@@ -1,0 +1,192 @@
+{
+    "info": {
+        "name": "ASABRI Mail API",
+        "description": "API Collection with PT ASABRI data and fixed headers.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.environment.set(\"asabri_token\", response.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"asabri1971@mail.co.id\",\n    \"password\": \"asabri1971\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/api/login"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Surat Masuk (PT ASABRI)",
+            "item": [
+                {
+                    "name": "Get All",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{asabri_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/api/surat-masuk"
+                        }
+                    }
+                },
+                {
+                    "name": "Create Surat Masuk (Klaim Pensiun)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{asabri_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"pengirim\": \"Polda Metro Jaya\",\n    \"dari_tanggal\": \"2026-01-25\",\n    \"sampai_tanggal\": \"2026-01-28\",\n    \"perihal\": \"Pengajuan Klaim Manfaat Asuransi Pensiun KBP Budi Santoso\",\n    \"no_surat\": \"B/123/I/RES.1.24/2026/Ditreskrimum\",\n    \"status\": \"proses\",\n    \"klasifikasi\": \"biasa\",\n    \"tingkat\": \"tinggi\",\n    \"sumber_berkas\": \"surat edaran\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/api/surat-masuk"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Surat Keluar (PT ASABRI)",
+            "item": [
+                {
+                    "name": "Get All",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{asabri_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/api/surat-keluar"
+                        }
+                    }
+                },
+                {
+                    "name": "Create Surat Keluar (Konfirmasi Klaim)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{asabri_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"sumber_berkas\": \"internal\",\n    \"kirim_sebagai\": \"Kepala Divisi Layanan\",\n    \"tanggal_pembuatan\": \"2026-01-28\",\n    \"kategori_berkas\": \"nota dinas\",\n    \"no_surat\": \"ND/045/LKN/ASABRI/I/2026\",\n    \"status\": \"terkirim\",\n    \"perihal\": \"Konfirmasi Kelengkapan Dokumen Klaim Manfaat Santunan Kematian\",\n    \"tingkat_urgensi_penyelesaian\": \"tinggi\",\n    \"klasifikasi_surat_dinas\": \"terbatas\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "http://127.0.0.1:8000/api/surat-keluar"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
