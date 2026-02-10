@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ActivityLog;
+use App\Imports\SuratKeluarImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SuratKeluarController extends Controller
 {
@@ -64,5 +66,24 @@ class SuratKeluarController extends Controller
         ]);
 
         return back()->with('success', 'Surat disetujui.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        Excel::import(new SuratKeluarImport, $request->file('file'));
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'import_surat_keluar',
+            'description' => "Imported Surat Keluar from Excel",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+
+        return back()->with('success', 'Data berhasil diimport.');
     }
 }
