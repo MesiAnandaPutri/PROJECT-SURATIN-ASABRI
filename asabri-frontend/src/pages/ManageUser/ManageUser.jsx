@@ -98,7 +98,7 @@ const ManageUser = () => {
                     <Search className="search-icon" size={20} />
                     <input
                         type="text"
-                        placeholder="Cari berdasarkan nama atau NRP/Username..."
+                        placeholder="Cari berdasarkan nama atau Username..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -112,7 +112,7 @@ const ManageUser = () => {
                             <tr>
                                 <th style={{ width: '60px' }}>No</th>
                                 <th>Nama Lengkap</th>
-                                <th>NRP / Username</th>
+                                <th>Username</th>
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th style={{ width: '150px' }}>Aksi</th>
