@@ -832,7 +832,10 @@ class ApiController extends Controller
                         'tingkat_urgensi_penyelesaian' => $this->validateEnum($getValue('tingkat_urgensi_penyelesaian'), [
                             'amat segera',
                             'biasa',
-                            'segera'
+                            'segera',
+                            'tinggi',
+                            'sedang',
+                            'rendah'
                         ], null),
                         'perihal' => $getValue('perihal') ?: null,
                         'keterangan' => $getValue('keterangan'),
@@ -845,30 +848,19 @@ class ApiController extends Controller
                     // $data['tujuan'] = $data['tujuan'] ?: null; // Handled above
                     // $data['perihal'] = $data['perihal'] ?: null; // Handled above
 
-                    // Validate required fields
-                    $missingFields = [];
+                    /* 
+                    // REMOVED: Required checks to allow empty values
                     if (empty($data['no_surat']))
                         $missingFields[] = 'No. Surat';
-                    if (empty($data['tanggal_pembuatan']))
-                        $missingFields[] = 'Tanggal Pembuatan';
-                    if (empty($data['tujuan']))
-                        $missingFields[] = 'Tujuan';
-                    if (empty($data['kategori_berkas']))
-                        $missingFields[] = 'Kategori Berkas';
-                    if (empty($data['klasifikasi_surat_dinas']))
-                        $missingFields[] = 'Klasifikasi Surat Dinas';
-                    if (empty($data['tingkat_urgensi_penyelesaian']))
-                        $missingFields[] = 'Tingkat Urgensi';
-                    if (empty($data['perihal']))
-                        $missingFields[] = 'Perihal';
-
+                    // ... other checks
                     if (!empty($missingFields)) {
                         $errors[] = "Baris {$rowNumber}: Kolom wajib diisi: " . implode(', ', $missingFields);
                         continue;
                     }
+                    */
 
-                    // Check if no_surat already exists
-                    if (SuratKeluar::where('no_surat', $data['no_surat'])->exists()) {
+                    // Check if no_surat already exists (ONLY if not empty)
+                    if (!empty($data['no_surat']) && SuratKeluar::where('no_surat', $data['no_surat'])->exists()) {
                         $errors[] = "Baris {$rowNumber}: No. Surat '{$data['no_surat']}' sudah ada";
                         continue;
                     }
