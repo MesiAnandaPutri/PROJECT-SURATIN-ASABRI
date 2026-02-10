@@ -1,0 +1,131 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.delete-modal-container {
+    background: white;
+    width: 400px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header-danger {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-close-light {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94A3B8;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-close-light:hover {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+.delete-modal-body {
+    padding: 0 32px 32px;
+    text-align: center;
+}
+
+.trash-icon-container {
+    background-color: #FEF2F2;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+}
+
+.delete-modal-body h3 {
+    font-size: 20px;
+    color: #0F172A;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+}
+
+.delete-modal-body p {
+    color: #64748B;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.delete-modal-body strong {
+    color: #334155;
+}
+
+.delete-modal-footer {
+    padding: 24px 32px;
+    background-color: #F8FAFC;
+    display: flex;
+    gap: 12px;
+}
+
+.delete-modal-footer button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary {
+    background: white;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+}
+
+.btn-secondary:hover {
+    background-color: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+.btn-danger {
+    background-color: #EF4444;
+    border: none;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover {
+    background-color: #DC2626;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(239, 68, 68, 0.3);
+}
