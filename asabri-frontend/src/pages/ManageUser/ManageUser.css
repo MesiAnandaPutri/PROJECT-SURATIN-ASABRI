@@ -1,0 +1,224 @@
+.manage-user-container {
+    padding: 0;
+    background-color: transparent;
+    min-height: auto;
+}
+
+.manage-user-container .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.manage-user-container .page-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.manage-user-container .page-header p {
+    color: #64748B;
+    margin: 0;
+    font-weight: 500;
+}
+
+.btn-add-user {
+    background-color: #DDA83A;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(221, 168, 58, 0.2);
+}
+
+.btn-add-user:hover {
+    background-color: #c79734;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(221, 168, 58, 0.3);
+}
+
+.search-card {
+    background: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E2E8F0;
+    margin-bottom: 24px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: #94A3B8;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 12px 12px 44px;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #1E293B;
+    background-color: #F8FAFC;
+    transition: all 0.2s;
+}
+
+.search-input-wrapper input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05);
+}
+
+.role-badge {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-badge.role-admin {
+    background-color: #EFF6FF;
+    color: #2563EB;
+}
+
+.role-badge.role-staff {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+.status-badge-alt {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-badge-alt.status-active {
+    background-color: #ECFDF5;
+    color: #10B981;
+}
+
+.status-badge-alt.status-inactive {
+    background-color: #FEF2F2;
+    color: #EF4444;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #E2E8F0;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit {
+    color: #DDA83A;
+}
+
+.btn-password {
+    color: #2563EB;
+}
+
+.btn-delete {
+    color: #EF4444;
+}
+
+.btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-edit:hover {
+    background-color: #FFFBEB;
+    border-color: #FCD34D;
+}
+
+.btn-password:hover {
+    background-color: #EFF6FF;
+    border-color: #93C5FD;
+}
+
+.btn-delete:hover {
+    background-color: #FEF2F2;
+    border-color: #FECACA;
+}
+
+.manage-user-container .content-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E2E8F0;
+    overflow: hidden;
+}
+
+.manage-user-container .table-container {
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .manage-user-container .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .btn-add-user {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    background: #002966;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.custom-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+.custom-table tr:hover {
+    background-color: #f8fafc;
+}

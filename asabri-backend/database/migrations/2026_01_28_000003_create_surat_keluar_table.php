@@ -41,6 +41,7 @@ return new class extends Migration {
                 'surat perjanjian kerja sama',
                 'tinjau skep'
             ]);
+            $table->string('tujuan');
             $table->string('no_surat')->unique();
             $table->enum('status', ['terkirim', 'draft'])->default('draft');
             $table->text('perihal');

@@ -40,13 +40,13 @@ class SuratMasukController extends Controller
         $request->validate([
             'pengirim' => 'required',
             'no_surat' => 'required|unique:surat_masuk',
-            'dari_tanggal' => 'required|date',
-            'sampai_tanggal' => 'required|date',
+            'tanggal_terima_surat' => 'required|date',
+            'tanggal_surat_masuk' => 'required|date',
             'perihal' => 'required',
-            'status' => 'required|in:proses,selesai',
-            'klasifikasi' => 'required|in:biasa,penting,rahasia,segera',
-            'tingkat' => 'required|in:rendah,sedang,tinggi,mendesak',
-            'sumber_berkas' => 'required|in:nota dinas,surat edaran,surat masuk,peraturan',
+            'status' => 'required|in:proses,selesai,disposisi',
+            'klasifikasi' => 'required',
+            'tingkat' => 'required',
+            'sumber_berkas' => 'required|in:internal,eksternal',
         ]);
 
         $surat = SuratMasuk::create($request->all());

@@ -1,0 +1,183 @@
+.main-layout {
+    min-height: 100vh;
+    background-color: #f8faff;
+    position: relative;
+    /* Context for overlay */
+}
+
+.main-content {
+    margin-left: 260px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: block;
+    padding: 0;
+    width: auto;
+    transition: margin-left 0.3s ease;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 15px 30px;
+    color: #333;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 70px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+    display: none;
+    /* Hidden on desktop */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #002B5C;
+    margin-right: 10px;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 0.5px;
+    color: #002B5C;
+}
+
+.header-subtitle {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+    padding-left: 15px;
+    border-left: 2px solid #cbd5e1;
+    height: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.date-pill {
+    background-color: #f1f5f9;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #002B5C;
+    border: 1px solid #e2e8f0;
+}
+
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.user-role {
+    font-size: 0.7rem;
+    color: #fbbf24;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.user-avatar-placeholder {
+    width: 38px;
+    height: 38px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.page-content {
+    padding: 30px;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 90;
+    /* Below sidebar (100) but above content */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 900px) {
+    .header-subtitle {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .hamburger-btn {
+        display: block;
+    }
+
+    .header-title {
+        font-size: 1.2rem;
+    }
+
+    .top-bar {
+        padding: 10px 15px;
+    }
+
+    .page-content {
+        padding: 15px;
+    }
+
+    .date-pill {
+        display: none;
+        /* Hide date on small mobile */
+    }
+}
