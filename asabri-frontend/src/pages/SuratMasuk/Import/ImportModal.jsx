@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, X, Download, FileText } from 'lucide-react';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './ImportModal.css';
 
@@ -15,7 +16,12 @@ const ImportModal = ({ isOpen, onClose, onSuccess }) => {
             const fileExtension = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
 
             if (!validExtensions.includes(fileExtension)) {
-                alert('Hanya file CSV, XLSX, atau XLS yang diperbolehkan');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Format Salah',
+                    text: 'Hanya file CSV, XLSX, atau XLS yang diperbolehkan',
+                    confirmButtonColor: '#002966'
+                });
                 return;
             }
             setFile(selectedFile);
@@ -25,7 +31,12 @@ const ImportModal = ({ isOpen, onClose, onSuccess }) => {
 
     const handleUpload = async () => {
         if (!file) {
-            alert('Pilih file CSV terlebih dahulu');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pilih File',
+                text: 'Pilih file CSV terlebih dahulu',
+                confirmButtonColor: '#002966'
+            });
             return;
         }
 
@@ -50,7 +61,12 @@ const ImportModal = ({ isOpen, onClose, onSuccess }) => {
             }
         } catch (error) {
             console.error('Import error:', error);
-            alert(error.response?.data?.message || 'Gagal mengimport file');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Import',
+                text: error.response?.data?.message || 'Gagal mengimport file',
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setUploading(false);
         }

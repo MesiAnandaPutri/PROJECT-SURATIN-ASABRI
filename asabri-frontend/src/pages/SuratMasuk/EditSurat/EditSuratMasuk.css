@@ -62,10 +62,10 @@
 }
 
 .form-section {
-    margin-bottom: 40px;
+    margin-bottom: 0;
     position: relative;
-    padding-bottom: 40px;
-    border-bottom: 1px solid #F1F5F9;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .form-section:last-child {

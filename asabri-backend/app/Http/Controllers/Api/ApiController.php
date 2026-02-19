@@ -52,7 +52,8 @@ class ApiController extends Controller
             'total' => (string) ($countMasuk + $countKeluar),
             'masuk' => (string) $countMasuk,
             'keluar' => (string) $countKeluar,
-            'pending' => (string) ($pendingMasuk + $pendingKeluar),
+            'pending_masuk' => (string) $pendingMasuk,
+            'pending_keluar' => (string) $pendingKeluar,
         ];
 
         // 2. Recent Activities
@@ -141,14 +142,38 @@ class ApiController extends Controller
         $enums['status'] = $enums['surat_masuk_status'];
         // Removed klasifikasi/tingkat mappings
 
+        // --- Fetch Distinct Years for Filtering ---
+        $suratMasukYears = SuratMasuk::selectRaw('YEAR(tanggal_terima_surat) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->filter() // Remove nulls
+            ->values();
+
+        $suratKeluarYears = SuratKeluar::selectRaw('YEAR(tanggal_pembuatan) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->filter() // Remove nulls
+            ->values();
+
+        $enums['surat_masuk_years'] = $suratMasukYears;
+        $enums['surat_keluar_years'] = $suratKeluarYears;
+
         return response()->json($enums);
     }
 
     // --- SURAT MASUK CRUD ---
 
-    public function getSuratMasuk()
+    public function getSuratMasuk(Request $request)
     {
-        return response()->json(SuratMasuk::with(['disposisi.user'])->orderBy('tanggal_terima_surat', 'desc')->get());
+        $query = SuratMasuk::with(['disposisi.user'])->orderBy('tanggal_terima_surat', 'desc');
+
+        if ($request->has('year') && $request->year != '') {
+            $query->whereYear('tanggal_terima_surat', $request->year);
+        }
+
+        return response()->json($query->get());
     }
 
     public function showSuratMasuk($id)
@@ -191,35 +216,45 @@ class ApiController extends Controller
                 $file = $request->file('file');
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $path = $file->storeAs('surat-masuk', $filename, 'public');
-                $path = $file->storeAs('surat-masuk', $filename, 'public');
                 $validated['file_path'] = $path;
             }
 
             // Add creator ID
             $validated['user_id'] = Auth::id();
-            if (Auth::user()) {
-                $validated['created_by_name'] = Auth::user()->nama_lengkap;
-            }
+
+            \Illuminate\Support\Facades\Log::info('Creating SuratMasuk with data:', $validated);
 
             $surat = SuratMasuk::create($validated);
 
+            \Illuminate\Support\Facades\Log::info('SuratMasuk Created ID: ' . $surat->id);
+
             // Notify Pimpinan
             try {
+                // Notification logic temporarily commented out/simplified for debugging stability
+                /* 
                 Notification::create([
                     'role' => 'pimpinan',
                     'title' => 'Surat Masuk Baru',
                     'message' => "Surat No: {$surat->no_surat} memerlukan disposisi.",
                     'surat_masuk_id' => $surat->id,
                 ]);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to create notification: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+                */
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to create notification: ' . $e->getMessage());
             }
 
-            return response()->json($surat, 201);
+            \Illuminate\Support\Facades\Log::info('Returning success response');
+
+            return response()->json([
+                'message' => 'Surat masuk berhasil ditambahkan',
+                'data' => $surat
+            ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Illuminate\Support\Facades\Log::error('Validation Error: ', $e->errors());
             return response()->json(['message' => 'Validasi Gagal', 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Fatal Error storeSuratMasuk: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            return response()->json(['message' => 'Terjadi kesalahan internal: ' . $e->getMessage()], 500);
         }
     }
 
@@ -249,9 +284,15 @@ class ApiController extends Controller
 
     // --- SURAT KELUAR CRUD ---
 
-    public function getSuratKeluar()
+    public function getSuratKeluar(Request $request)
     {
-        return response()->json(SuratKeluar::with('user')->get());
+        $query = SuratKeluar::with('user')->orderBy('tanggal_pembuatan', 'desc');
+
+        if ($request->has('year') && $request->year != '') {
+            $query->whereYear('tanggal_pembuatan', $request->year);
+        }
+
+        return response()->json($query->get());
     }
 
     public function showSuratKeluar($id)
@@ -282,8 +323,8 @@ class ApiController extends Controller
                 'no_surat' => 'required|string|unique:surat_keluar,no_surat',
                 'status' => 'nullable|string',
                 'perihal' => 'required|string',
-                'tingkat_urgensi_penyelesaian' => 'required|string',
-                'klasifikasi_surat_dinas' => 'required|string',
+                'tingkat_urgensi_penyelesaian' => 'nullable|string',
+                'klasifikasi_surat_dinas' => 'nullable|string',
                 'keterangan' => 'nullable|string',
                 'no_resi' => 'nullable|string',
                 'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200',
@@ -296,9 +337,6 @@ class ApiController extends Controller
 
             // Add creator ID
             $validated['user_id'] = Auth::id();
-            if (Auth::user()) {
-                $validated['created_by_name'] = Auth::user()->nama_lengkap;
-            }
 
             // Handle File Upload
             if ($request->hasFile('file')) {
@@ -439,7 +477,8 @@ class ApiController extends Controller
                     'name' => $user->nama_lengkap ?? 'No Name',
                     'username' => $user->username ?? 'no-username',
                     'role' => ucfirst($user->role ?? 'staff'),
-                    'status' => 'Active', // Default status as it's missing from DB schema
+                    'status' => ucfirst($user->status ?? 'aktif'),
+                    'ttd_path' => $user->ttd_path ? asset('storage/' . $user->ttd_path) : null,
                 ];
             });
 
@@ -463,14 +502,27 @@ class ApiController extends Controller
                 'username' => 'required|string|unique:users,username|max:255',
                 'password' => 'required|string|min:6',
                 'role' => 'required|string|in:admin,staff,pimpinan', // Adjust roles as needed
+                'ttd_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048', // 2MB max
             ]);
 
-            $user = User::create([
+            $userData = [
+
                 'nama_lengkap' => $validated['name'], // Mapping 'name' from frontend to 'nama_lengkap' in DB
                 'username' => $validated['username'],
                 'password' => Hash::make($validated['password']),
                 'role' => $validated['role'],
-            ]);
+                'status' => 'aktif',
+            ];
+
+            // Upload TTD if role is pimpinan and file present
+            if ($validated['role'] === 'pimpinan' && $request->hasFile('ttd_file')) {
+                $file = $request->file('ttd_file');
+                $filename = 'ttd_' . time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('ttd', $filename, 'public');
+                $userData['ttd_path'] = $path;
+            }
+
+            $user = User::create($userData);
 
             return response()->json($user, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -496,6 +548,11 @@ class ApiController extends Controller
             return response()->json(['message' => 'Cannot delete currently logged in user'], 403);
         }
 
+        // Delete TTD file if exists
+        if ($user->ttd_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->ttd_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->ttd_path);
+        }
+
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
@@ -512,6 +569,8 @@ class ApiController extends Controller
             'name' => $user->nama_lengkap, // Map to 'name' for frontend
             'username' => $user->username,
             'role' => $user->role,
+            'status' => $user->status ?? 'aktif',
+            'ttd_path' => $user->ttd_path ? asset('storage/' . $user->ttd_path) : null,
         ]);
     }
 
@@ -532,6 +591,8 @@ class ApiController extends Controller
                 'username' => 'required|string|max:255|unique:users,username,' . $id,
                 'role' => 'required|string|in:admin,staff,pimpinan',
                 'password' => 'nullable|string|min:6', // Password optional on update
+                'status' => 'nullable|string|in:aktif,nonaktif,Aktif,Nonaktif',
+                'ttd_file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             ]);
 
             $user->nama_lengkap = $validated['name'];
@@ -540,6 +601,29 @@ class ApiController extends Controller
 
             if (!empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);
+            }
+
+            if (isset($validated['status'])) {
+                $user->status = strtolower($validated['status']);
+            }
+
+            // Handle TTD Update
+            if ($validated['role'] === 'pimpinan' && $request->hasFile('ttd_file')) {
+                // Delete old TTD
+                if ($user->ttd_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->ttd_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->ttd_path);
+                }
+
+                $file = $request->file('ttd_file');
+                $filename = 'ttd_' . time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('ttd', $filename, 'public');
+                $user->ttd_path = $path;
+            } elseif ($validated['role'] !== 'pimpinan' && $user->ttd_path) {
+                // If role changed from pimpinan to something else, remove TTD
+                if ($user->ttd_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->ttd_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->ttd_path);
+                }
+                $user->ttd_path = null;
             }
 
             $user->save();
@@ -609,7 +693,7 @@ class ApiController extends Controller
 
         $nextNum = $maxNum + 1;
 
-        return response()->json(['number' => $prefix . $nextNum]);
+        return response()->json(['number' => $prefix . str_pad($nextNum, 2, '0', STR_PAD_LEFT)]);
     }
 
     public function importSuratMasukCSV(Request $request)

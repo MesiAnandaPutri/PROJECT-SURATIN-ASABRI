@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Key, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../services/api';
 import HapusUser from './HapusUser/HapusUser';
 import './ManageUser.css';
@@ -25,8 +26,14 @@ const ManageUser = () => {
 
     useEffect(() => {
         if ((user.role || '').toLowerCase() !== 'admin') {
-            alert('Akses Ditolak. Halaman ini hanya untuk Admin.');
-            navigate('/dashboard');
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Halaman ini hanya untuk Admin.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/dashboard');
+            });
             return;
         }
 
@@ -47,7 +54,12 @@ const ManageUser = () => {
             console.error('Error fetching users:', error);
             const backendMsg = error.response?.data?.message || 'Gagal mengambil data user.';
             const backendError = error.response?.data?.error || '';
-            alert(`${backendMsg}\n${backendError}\n\nStatus: ${error.response?.status}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Memuat Data',
+                text: `${backendMsg}\n${backendError}\nStatus: ${error.response?.status}`,
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setLoading(false);
         }
@@ -70,7 +82,12 @@ const ManageUser = () => {
         } catch (error) {
             console.error('Error deleting user:', error);
             const msg = error.response?.data?.message || 'Gagal menghapus user.';
-            alert(msg);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menghapus',
+                text: msg,
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setIsDeleting(false);
         }
@@ -128,41 +145,47 @@ const ManageUser = () => {
                                     <tr key={user.id}>
                                         <td>{index + 1}</td>
                                         <td>{user.name}</td>
-                                        <td className="text-sm">{user.username}</td>
+                                        <td>{user.username}</td>
                                         <td>
-                                            <span className={`role-badge role-${user.role.toLowerCase()}`}>
+                                            <span className={`role-badge role-${(user.role || 'staff').toLowerCase()}`}>
                                                 {user.role}
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`status-badge-alt status-${user.status.toLowerCase()}`}>
-                                                {user.status}
+                                            <span style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '12px',
+                                                backgroundColor: (user.status || 'aktif').toLowerCase() === 'aktif' ? '#e6f4ea' : '#fce8e6',
+                                                color: (user.status || 'aktif').toLowerCase() === 'aktif' ? '#1e7e34' : '#c53030'
+                                            }}>
+                                                {user.status || 'Aktif'}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="btn-icon btn-edit"
-                                                    title="Edit User"
-                                                    onClick={() => navigate(`/users/edit/${user.id}`)}
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
+                                        <td className="actions-cell">
+                                            <button
+                                                className="btn-icon btn-edit"
+                                                title="Edit User"
+                                                onClick={() => navigate(`/users/edit/${user.id}`)}
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
 
-                                                <button
-                                                    className="btn-icon btn-delete"
-                                                    title="Hapus User"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
+                                            <button
+                                                className="btn-icon btn-delete"
+                                                title="Hapus User"
+                                                onClick={() => handleDeleteClick(user)}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="text-center">Tidak ada pengguna ditemukan.</td>
+                                    <td colSpan="6" className="empty-state">
+                                        Tidak ada pengguna ditemukan.
+                                    </td>
                                 </tr>
                             )}
                         </tbody>

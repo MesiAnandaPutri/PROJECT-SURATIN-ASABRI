@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Upload } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './EditSuratMasuk.css';
 
@@ -64,8 +65,14 @@ const EditSuratMasuk = () => {
             }
         } catch (error) {
             console.error('Error fetching surat detail:', error);
-            alert('Gagal mengambil data surat. Pastikan data ada.');
-            navigate('/surat-masuk');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Gagal mengambil data surat. Pastikan data ada.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-masuk');
+            });
         } finally {
             setLoading(false);
         }
@@ -91,12 +98,23 @@ const EditSuratMasuk = () => {
             };
 
             await api.put(`/surat-masuk/${id}`, payload);
-            alert('Surat masuk berhasil diperbarui!');
-            navigate('/surat-masuk');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Surat masuk berhasil diperbarui!',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-masuk');
+            });
         } catch (error) {
             console.error('Error updating surat masuk:', error);
             const msg = error.response?.data?.message || 'Gagal memperbarui surat masuk.';
-            alert(msg);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Update',
+                text: msg,
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setSubmitting(false);
         }
@@ -202,7 +220,7 @@ const EditSuratMasuk = () => {
                         </div>
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ marginBottom: '10px' }}>
                         <label>Keterangan</label>
                         <input
                             type="text"
@@ -212,10 +230,7 @@ const EditSuratMasuk = () => {
                             onChange={handleChange}
                         />
                     </div>
-                </div>
 
-                <div className="form-section">
-                    <h2 className="section-title">DOKUMEN</h2>
                     <div className="form-row">
                         <label>Pilih Dokumen</label>
                         <div className="upload-box">

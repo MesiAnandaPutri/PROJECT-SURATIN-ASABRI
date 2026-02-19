@@ -74,7 +74,7 @@ const Login = () => {
                     <div className="login-header">
                         <div className="logo-container">
                             <img src={LogoAsabri2} alt="ASABRI Logo" className="main-logo" />
-                            <h2 className="logo-text">Asabri Suratin</h2>
+                            <h2 className="logo-text">Asabri Swalapatra</h2>
                         </div>
 
                     </div>

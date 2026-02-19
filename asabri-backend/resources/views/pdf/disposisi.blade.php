@@ -11,34 +11,28 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
-            /* Reduced font size */
         }
 
         .header {
             width: 100%;
             margin-bottom: 5px;
-            /* Reduced margin */
         }
 
         .logo {
             width: 180px;
-            /* Slightly smaller logo */
         }
 
         .title {
             text-align: center;
             font-weight: bold;
             font-size: 14px;
-            /* Reduced title size */
             margin-top: 5px;
             margin-bottom: 10px;
-            /* Reduced margin */
         }
 
         .info-table {
             width: 100%;
             margin-bottom: 10px;
-            /* Reduced margin */
         }
 
         .info-table td {
@@ -56,7 +50,6 @@
         .main-table td {
             border: 1px solid black;
             padding: 3px;
-            /* Reduced padding */
             vertical-align: top;
         }
 
@@ -82,19 +75,16 @@
 
         .checkbox-item {
             margin-bottom: 2px;
-            /* Reduced item margin */
         }
 
         .signature-section {
             margin-top: 20px;
-            /* Reduced margin */
             text-align: right;
             padding-right: 30px;
         }
 
         .signature-name {
             margin-top: 50px;
-            /* Reduced signature space */
             font-weight: bold;
             text-decoration: underline;
         }
@@ -104,8 +94,8 @@
 <body>
     <div class="header">
         <div style="margin-bottom: 10px;">
-            <img src="{{ public_path('LogoAsabri1.png') }}" alt="ASABRI" class="logo"
-                style="width: 200px; margin-left: 50px;" onerror="this.style.display='none'">
+            <img src="{{ public_path('LogoAsabri1.png') }}" alt="ASABRI" class="logo" style="width: 200px;"
+                onerror="this.style.display='none'">
         </div>
         <div class="title">LEMBAR DISPOSISI</div>
     </div>
@@ -158,7 +148,6 @@
                 <td class="aksi-col">
                     @php
                         $selectedInstruction = $disposisi->instruksi ?? '';
-                        // Define items with their display HTML and value for comparison
                         $items = [
                             ['val' => 'ACC/Setuju', 'html' => 'ACC/Setuju'],
                             ['val' => 'Agar Ditindaklanjuti', 'html' => 'Agar Ditindaklanjuti'],
@@ -182,8 +171,9 @@
                             <li class="checkbox-item"
                                 style="{{ strcasecmp($item['val'], $selectedInstruction) == 0 ? 'font-weight: bold;' : '' }}">
                                 @if(strcasecmp($item['val'], $selectedInstruction) == 0)
-                                    <strong>{!! $item['html'] !!} <span
-                                            style="font-family: DejaVu Sans, sans-serif;">&#10003;</span></strong>
+                                    <strong>{!! $item['html'] !!} <img src="{{ public_path('checklist.svg') }}"
+                                            style="height: 16px; width: auto; margin-left: 2px; vertical-align: sub;"
+                                            alt="Check"></strong>
                                 @else
                                     {!! $item['html'] !!}
                                 @endif
@@ -202,10 +192,18 @@
     </table>
 
     <div class="signature-section">
-        <p>KAKANCAB,</p>
-        <div class="signature-name">
-            {{ $pimpinan_name ?? 'SALIM ACHMAD' }}
+        <div style="float: right; width: 200px; text-align: center;">
+            <p style="margin-bottom: 0;">KAKANCAB,</p>
+            @if(isset($ttd_path) && file_exists($ttd_path))
+                <img src="{{ $ttd_path }}" style="height: 70px; width: auto; margin: 5px auto; display: block;" alt="TTD">
+            @else
+                <br><br><br>
+            @endif
+            <div class="signature-name" style="margin-top: 5px;">
+                {{ $pimpinan_name ?? 'SALIM ACHMAD' }}
+            </div>
         </div>
+        <div style="clear: both;"></div>
     </div>
 </body>
 

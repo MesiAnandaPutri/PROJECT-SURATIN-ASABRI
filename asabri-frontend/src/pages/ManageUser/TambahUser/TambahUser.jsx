@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, Lock, Briefcase, AtSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './TambahUser.css';
 
@@ -12,6 +13,7 @@ const TambahUser = () => {
         password: '',
         role: ''
     });
+    const [ttdFile, setTtdFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -24,8 +26,14 @@ const TambahUser = () => {
         }
 
         if ((user.role || '').toLowerCase() !== 'admin') {
-            alert('Akses Ditolak. Hanya Admin yang dapat menambah user.');
-            navigate('/dashboard');
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Hanya Admin yang dapat menambah user.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/dashboard');
+            });
         }
     }, [navigate]);
 
@@ -37,15 +45,42 @@ const TambahUser = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setTtdFile(file);
+        if (errors.ttd_file) {
+            setErrors(prev => ({ ...prev, ttd_file: undefined }));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrors({});
 
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('username', formData.username);
+        data.append('password', formData.password);
+        data.append('role', formData.role);
+        if (formData.role === 'pimpinan' && ttdFile) {
+            data.append('ttd_file', ttdFile);
+        }
+
         try {
-            await api.post('/users', formData);
-            alert('User berhasil ditambahkan!');
-            navigate('/users');
+            await api.post('/users', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'User berhasil ditambahkan!',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/users');
+            });
         } catch (error) {
             console.error('Error adding user:', error);
             const msg = error.response?.data?.message || 'Gagal menambahkan user.';
@@ -59,7 +94,12 @@ const TambahUser = () => {
             }
 
             if (!Object.keys(backendErrors).length) {
-                alert(fullMsg);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: fullMsg,
+                    confirmButtonColor: '#002966'
+                });
             }
         } finally {
             setLoading(false);
@@ -144,6 +184,21 @@ const TambahUser = () => {
                     </div>
                     {errors.role && <span className="error-message">{errors.role[0]}</span>}
                 </div>
+
+                {formData.role === 'pimpinan' && (
+                    <div className="form-group">
+                        <label>Upload TTD (Format: PNG/JPG, Transparan lebih baik)</label>
+                        <div className={`input-wrapper ${errors.ttd_file ? 'input-error' : ''}`}>
+                            <input
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                onChange={handleFileChange}
+                                style={{ padding: '10px' }}
+                            />
+                        </div>
+                        {errors.ttd_file && <span className="error-message">{errors.ttd_file[0]}</span>}
+                    </div>
+                )}
 
                 <div className="form-actions">
                     <button type="submit" className="btn-submit" disabled={loading}>

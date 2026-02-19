@@ -68,20 +68,37 @@ class DisposisiController extends Controller
     }
     public function download($id)
     {
-        $suratMasuk = SuratMasuk::with(['disposisi', 'user'])->findOrFail($id);
+        $suratMasuk = SuratMasuk::with(['disposisi'])->findOrFail($id);
         $disposisi = $suratMasuk->disposisi->last(); // Get latest disposisi
 
-        // If no disposisi, maybe return error or blank sheet? 
-        // For now, allow blank sheet if no disposisi exists (pre-filled fields only)
+        return $this->generateDisposisiPdf($suratMasuk, $disposisi);
+    }
+
+    public function downloadSingle($disposisiId)
+    {
+        $disposisi = Disposisi::with('suratMasuk')->findOrFail($disposisiId);
+        $suratMasuk = $disposisi->suratMasuk;
+
+        return $this->generateDisposisiPdf($suratMasuk, $disposisi);
+    }
+
+    private function generateDisposisiPdf($suratMasuk, $disposisi)
+    {
+        $pimpinanUser = null;
+        if ($disposisi) {
+            $pimpinanUser = \App\Models\User::find($disposisi->user_id);
+        }
+
+        $ttdPath = ($pimpinanUser && $pimpinanUser->ttd_path) ? public_path('storage/' . $pimpinanUser->ttd_path) : null;
 
         $data = [
             'surat' => $suratMasuk,
             'disposisi' => $disposisi,
-            'pimpinan_name' => $disposisi ? $disposisi->user->nama_lengkap : 'KAKANCAB',
+            'pimpinan_name' => $pimpinanUser ? $pimpinanUser->nama_lengkap : 'KAKANCAB',
+            'ttd_path' => $ttdPath,
         ];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.disposisi', $data);
-        // F4 / Folio size in points (approx 21.5cm x 33cm)
         $pdf->setPaper([0, 0, 609.4488, 935.433], 'portrait');
 
         return $pdf->stream('Lembar_Disposisi_' . str_replace('/', '_', $suratMasuk->no_surat) . '.pdf');

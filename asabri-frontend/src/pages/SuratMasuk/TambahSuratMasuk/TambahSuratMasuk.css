@@ -48,9 +48,9 @@
 }
 
 .form-section {
-    margin-bottom: 32px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 24px;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 .form-section:last-child {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Send, Edit2, Trash2, ChevronLeft, ChevronRight, Upload, Truck } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import api from '../../../services/api';
 import DetailSuratKeluarModal from '../DetailSurat/DetailSuratKeluarModal';
 import HapusSuratKeluarModal from '../HapusSurat/HapusSuratKeluarModal';
@@ -18,6 +18,8 @@ const SuratKeluar = () => {
     const [suratData, setSuratData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+    const [years, setYears] = useState([]);
     const [options, setOptions] = useState({
         surat_keluar_klasifikasi_surat_dinas: [],
         surat_keluar_tingkat_urgensi_penyelesaian: []
@@ -28,6 +30,8 @@ const SuratKeluar = () => {
         klasifikasi_surat_dinas: '',
         tingkat_urgensi_penyelesaian: ''
     });
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
 
     const [showDetail, setShowDetail] = useState(false);
     const [selectedSuratDetail, setSelectedSuratDetail] = useState(null);
@@ -46,9 +50,12 @@ const SuratKeluar = () => {
     const itemsPerPage = 15;
 
     useEffect(() => {
-        fetchSuratKeluar();
         fetchOptions();
     }, []);
+
+    useEffect(() => {
+        fetchSuratKeluar();
+    }, [selectedYear]);
 
     useEffect(() => {
         if (location.state?.targetSuratId && suratData.length > 0) {
@@ -65,6 +72,9 @@ const SuratKeluar = () => {
             const response = await api.get('/enum-options');
             if (response.data) {
                 setOptions(response.data);
+                if (response.data.surat_keluar_years) {
+                    setYears(response.data.surat_keluar_years);
+                }
             }
         } catch (error) {
             console.error('Error fetching options:', error);
@@ -72,8 +82,11 @@ const SuratKeluar = () => {
     };
 
     const fetchSuratKeluar = async () => {
+        setLoading(true);
         try {
-            const response = await api.get('/surat-keluar');
+            const response = await api.get('/surat-keluar', {
+                params: { year: selectedYear }
+            });
             setSuratData(response.data);
         } catch (error) {
             console.error('Error fetching surat keluar:', error);
@@ -110,7 +123,11 @@ const SuratKeluar = () => {
         const matchesKlasifikasi = filters.klasifikasi_surat_dinas === '' || item.klasifikasi_surat_dinas === filters.klasifikasi_surat_dinas;
         const matchesTingkat = filters.tingkat_urgensi_penyelesaian === '' || item.tingkat_urgensi_penyelesaian === filters.tingkat_urgensi_penyelesaian;
 
-        return matchesSearch && matchesDateRange && matchesKlasifikasi && matchesTingkat;
+        const matchesStatus = statusFilter
+            ? (item.status || '').toLowerCase() === statusFilter.toLowerCase()
+            : true;
+
+        return matchesSearch && matchesDateRange && matchesKlasifikasi && matchesTingkat && matchesStatus;
     }).sort((a, b) => b.id - a.id);
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -151,10 +168,15 @@ const SuratKeluar = () => {
             setSuratData(prev => prev.filter(item => item.id !== selectedSuratHapus.id));
             setShowHapus(false);
             setSelectedSuratHapus(null);
-            alert('Surat berhasil dihapus.');
+            addToast('Surat berhasil dihapus.', 'success');
         } catch (error) {
             console.error('Error deleting surat:', error);
-            alert('Gagal menghapus surat.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menghapus',
+                text: 'Gagal menghapus surat.',
+                confirmButtonColor: '#002966'
+            });
         }
     };
 
@@ -189,6 +211,18 @@ const SuratKeluar = () => {
                     </div>
 
                     <div className="filter-dropdowns">
+                        <select
+                            className="filter-select"
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(e.target.value)}
+                            style={{ width: '150px' }}
+                        >
+                            <option value="">Semua Tahun</option>
+                            {years.map(year => (
+                                <option key={year} value={year}>{year}</option>
+                            ))}
+                        </select>
+
                         <div className="date-filter">
                             <label>Dari:</label>
                             <input

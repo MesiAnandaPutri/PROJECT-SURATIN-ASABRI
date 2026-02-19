@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, User, Lock, Briefcase, AtSign } from 'lucide-react';
+import { ArrowLeft, User, Lock, Briefcase, AtSign, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './EditUser.css';
 
@@ -14,8 +16,11 @@ const EditUser = () => {
         name: '',
         username: '',
         password: '',
-        role: ''
+        role: '',
+        status: 'aktif'
     });
+    const [ttdFile, setTtdFile] = useState(null);
+    const [currentTtdPath, setCurrentTtdPath] = useState(null);
 
     useEffect(() => {
 
@@ -27,8 +32,14 @@ const EditUser = () => {
         }
 
         if ((user.role || '').toLowerCase() !== 'admin') {
-            alert('Akses Ditolak. Hanya Admin yang dapat mengedit user.');
-            navigate('/dashboard');
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Hanya Admin yang dapat mengedit user.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/dashboard');
+            });
             return;
         }
 
@@ -37,15 +48,25 @@ const EditUser = () => {
                 const response = await api.get(`/users/${id}`);
                 const userData = response.data;
                 setFormData({
-                    name: userData.name,
+                    name: userData.nama_lengkap || userData.name,
                     username: userData.username,
                     role: userData.role,
+                    status: (userData.status || 'aktif').toLowerCase(),
                     password: ''
                 });
+                if (userData.ttd_path) {
+                    setCurrentTtdPath(userData.ttd_path);
+                }
             } catch (error) {
                 console.error('Error fetching user:', error);
-                alert('Gagal mengambil data user.');
-                navigate('/users');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal mengambil data user.',
+                    confirmButtonColor: '#002966'
+                }).then(() => {
+                    navigate('/users');
+                });
             } finally {
                 setLoading(false);
             }
@@ -68,6 +89,11 @@ const EditUser = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setTtdFile(file);
+    };
+
     const validate = () => {
         const newErrors = {};
         if (!formData.name.trim()) newErrors.name = ['Nama lengkap wajib diisi'];
@@ -88,22 +114,48 @@ const EditUser = () => {
 
         setSaving(true);
 
-        const dataToSend = { ...formData };
-        if (!dataToSend.password) {
-            delete dataToSend.password;
+        const dataToSend = new FormData();
+        dataToSend.append('name', formData.name);
+        dataToSend.append('username', formData.username);
+        dataToSend.append('role', formData.role);
+        dataToSend.append('status', formData.status);
+        if (formData.password) {
+            dataToSend.append('password', formData.password);
+        }
+
+        // Append _method PUT needed for Laravel multipart/form-data update
+        dataToSend.append('_method', 'PUT');
+
+        if (formData.role === 'pimpinan' && ttdFile) {
+            dataToSend.append('ttd_file', ttdFile);
         }
 
         try {
-            await api.put(`/users/${id}`, dataToSend);
-            alert('Data user berhasil diperbarui!');
-            navigate('/users');
+            await api.post(`/users/${id}`, dataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Data user berhasil diperbarui!',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/users');
+            });
         } catch (error) {
             console.error('Error updating user:', error);
             const responseData = error.response?.data;
             if (responseData?.errors) {
                 setErrors(responseData.errors);
             } else {
-                alert(responseData?.message || 'Gagal memperbarui data user.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: responseData?.message || 'Gagal memperbarui data user.',
+                    confirmButtonColor: '#002966'
+                });
             }
         } finally {
             setSaving(false);
@@ -129,7 +181,7 @@ const EditUser = () => {
             <form onSubmit={handleSubmit} className="form-card" autoComplete="off">
                 <div className="form-group">
                     <label>Nama Lengkap</label>
-                    <div className={`input-wrapper ${errors.name ? 'input-error' : ''}`}>
+                    <div className={`input-wrapper ${errors.name ? 'input-error' : ''} `}>
                         <User className="input-icon" size={20} />
                         <input
                             type="text"
@@ -145,7 +197,7 @@ const EditUser = () => {
 
                 <div className="form-group">
                     <label>Username / NRP</label>
-                    <div className={`input-wrapper ${errors.username ? 'input-error' : ''}`}>
+                    <div className={`input-wrapper ${errors.username ? 'input-error' : ''} `}>
                         <AtSign className="input-icon" size={20} />
                         <input
                             type="text"
@@ -161,7 +213,7 @@ const EditUser = () => {
 
                 <div className="form-group">
                     <label>Password (Kosongkan jika tidak ingin mengubah)</label>
-                    <div className={`input-wrapper ${errors.password ? 'input-error' : ''}`}>
+                    <div className={`input-wrapper ${errors.password ? 'input-error' : ''} `}>
                         <Lock className="input-icon" size={20} />
                         <input
                             type="password"
@@ -177,7 +229,7 @@ const EditUser = () => {
 
                 <div className="form-group">
                     <label>Role</label>
-                    <div className={`input-wrapper ${errors.role ? 'input-error' : ''}`}>
+                    <div className={`input-wrapper ${errors.role ? 'input-error' : ''} `}>
                         <Briefcase className="input-icon" size={20} />
                         <select
                             name="role"
@@ -192,6 +244,42 @@ const EditUser = () => {
                     </div>
                     {errors.role && <span className="error-message">{errors.role[0]}</span>}
                 </div>
+
+                <div className="form-group">
+                    <label>Status Pengguna</label>
+                    <div className={`input-wrapper ${errors.status ? 'input-error' : ''} `}>
+                        <Briefcase className="input-icon" size={20} />
+                        <select
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                        >
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+
+                {formData.role === 'pimpinan' && (
+                    <div className="form-group">
+                        <label>Upload TTD Baru (Format: PNG/JPG)</label>
+                        {currentTtdPath && (
+                            <div style={{ marginBottom: '10px' }}>
+                                <p style={{ fontSize: '12px', color: '#666' }}>TTD Saat Ini:</p>
+                                <img src={currentTtdPath} alt="Current TTD" style={{ maxHeight: '60px', border: '1px solid #ccc' }} />
+                            </div>
+                        )}
+                        <div className={`input-wrapper ${errors.ttd_file ? 'input-error' : ''} `}>
+                            <input
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                onChange={handleFileChange}
+                                style={{ padding: '10px' }}
+                            />
+                        </div>
+                        {errors.ttd_file && <span className="error-message">{errors.ttd_file[0]}</span>}
+                    </div>
+                )}
 
                 <div className="form-actions">
                     <button type="submit" className="btn-submit" disabled={loading}>

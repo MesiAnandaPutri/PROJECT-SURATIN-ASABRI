@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Printer, Download, FileText, ExternalLink } from 'lucide-react';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './DetailSuratModal.css';
 
@@ -48,11 +49,43 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                 errorMessage = error.message;
             }
 
-            alert(`Download Gagal: ${errorMessage}.`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Download Gagal',
+                text: errorMessage,
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setDownloading(false);
         }
     };
+
+    const handleDownloadSingleDisposisi = async (disposisiId) => {
+        try {
+            const response = await api.get(`/disposisi/${disposisiId}/download`, {
+                responseType: 'blob',
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Lembar_Disposisi_${surat.no_surat?.replace(/[\/\\]/g, '_') || 'doc'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Download Gagal',
+                text: 'Gagal mengunduh lembar disposisi.',
+                confirmButtonColor: '#002966'
+            });
+        }
+    };
+
+    const hasMultipleDisposisi = surat.disposisi && surat.disposisi.length > 1;
 
     return (
         <div className="modal-overlay">
@@ -126,15 +159,49 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                                             <div className="riwayat-item" key={disp.id || index}>
                                                 <div className="riwayat-dot"></div>
                                                 <div className="riwayat-content">
-                                                    <span className="riwayat-date">
-                                                        {new Date(disp.created_at).toLocaleString('id-ID', {
-                                                            day: '2-digit', month: 'short', year: 'numeric',
-                                                            hour: '2-digit', minute: '2-digit'
-                                                        }).replace(/\./g, ':')}
-                                                    </span>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span className="riwayat-date">
+                                                            {new Date(disp.created_at).toLocaleString('id-ID', {
+                                                                day: '2-digit', month: 'short', year: 'numeric',
+                                                                hour: '2-digit', minute: '2-digit'
+                                                            }).replace(/\./g, ':')}
+                                                        </span>
+                                                        {hasMultipleDisposisi && (
+                                                            <button
+                                                                className="btn-download-disposisi"
+                                                                onClick={() => handleDownloadSingleDisposisi(disp.id)}
+                                                                title="Download Lembar Disposisi ini"
+                                                                style={{
+                                                                    background: 'none',
+                                                                    border: '1px solid #cbd5e1',
+                                                                    borderRadius: '6px',
+                                                                    padding: '4px 8px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px',
+                                                                    fontSize: '11px',
+                                                                    color: '#475569',
+                                                                    transition: 'all 0.2s'
+                                                                }}
+                                                                onMouseEnter={(e) => {
+                                                                    e.target.style.background = '#f1f5f9';
+                                                                    e.target.style.borderColor = '#002966';
+                                                                    e.target.style.color = '#002966';
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                    e.target.style.background = 'none';
+                                                                    e.target.style.borderColor = '#cbd5e1';
+                                                                    e.target.style.color = '#475569';
+                                                                }}
+                                                            >
+                                                                <Download size={12} /> PDF
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     <p className="riwayat-users">
                                                         <span className="font-semibold">{disp.user?.nama_lengkap || 'Admin'}</span>
-                                                        {' \u2192 '}
+                                                        {' → '}
                                                         <span className="font-semibold">
                                                             {Array.isArray(disp.diteruskan_kepada)
                                                                 ? disp.diteruskan_kepada.join(', ')

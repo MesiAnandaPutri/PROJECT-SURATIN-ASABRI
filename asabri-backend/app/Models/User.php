@@ -22,6 +22,8 @@ class User extends Authenticatable
         'username',
         'password',
         'role',
+        'status',
+        'ttd_path',
     ];
 
     /**
@@ -44,11 +46,11 @@ class User extends Authenticatable
 
     public function suratMasuk()
     {
-        return $this->hasMany(SuratMasuk::class, 'created_by');
+        return $this->hasMany(SuratMasuk::class, 'user_id');
     }
     public function suratKeluar()
     {
-        return $this->hasMany(SuratKeluar::class, 'created_by');
+        return $this->hasMany(SuratKeluar::class, 'user_id');
     }
     public function disposisi()
     {

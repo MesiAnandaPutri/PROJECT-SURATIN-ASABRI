@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Inbox, Send, FileBarChart, Users, LogOut, X } from 'lucide-react';
 import './Sidebar.css';
 import LogoAsabri2 from '../../pages/image/LogoAsabri2.png';
+import AsabriText from '../../pages/image/Asabri.png';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
@@ -35,8 +36,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <img src={LogoAsabri2} alt="ASABRI Logo" className="sidebar-logo" />
                     </div>
                     <div className="sidebar-brand-text">
-                        <h2>ASABRI</h2>
-                        <span>Mail System</span>
+                        <img src={AsabriText} alt="ASABRI" className="sidebar-brand-img" />
+                        <span>Swalapatra</span>
                     </div>
                 </div>
                 <button className="sidebar-close-btn" onClick={onClose}>

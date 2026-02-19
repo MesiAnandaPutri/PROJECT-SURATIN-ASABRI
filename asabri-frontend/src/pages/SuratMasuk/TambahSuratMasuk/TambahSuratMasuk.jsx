@@ -242,7 +242,7 @@ const TambahSuratMasuk = () => {
                         {errors.sumber_berkas && <span className="error-message">{errors.sumber_berkas[0]}</span>}
                     </div>
 
-                    <div className="form-row" style={{ marginBottom: '10px' }}>
+                    <div className="form-row">
                         <label>Keterangan</label>
                         <input
                             type="text"

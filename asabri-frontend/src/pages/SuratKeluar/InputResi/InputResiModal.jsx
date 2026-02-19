@@ -45,7 +45,12 @@ const InputResiModal = ({ isOpen, onClose, onSuccess, surat }) => {
             onClose();
         } catch (error) {
             console.error('Error updating resi:', error);
-            alert('Gagal mengupdate nomor resi.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Gagal mengupdate nomor resi.',
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setLoading(false);
         }

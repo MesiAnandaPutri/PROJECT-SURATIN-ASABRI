@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Search, CheckSquare, Square } from 'lucide-react';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './DisposisiModal.css';
 
@@ -52,7 +53,12 @@ const DisposisiModal = ({ isOpen, onClose, onSubmit, suratId }) => {
     const handleSend = () => {
 
         if (selectedRecipients.length === 0 || !instruction) {
-            alert('Mohon pilih minimal satu tujuan dan instruksi disposisi.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data Belum Lengkap',
+                text: 'Mohon pilih minimal satu tujuan dan instruksi disposisi.',
+                confirmButtonColor: '#002966'
+            });
             return;
         }
 

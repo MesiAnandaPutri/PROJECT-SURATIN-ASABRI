@@ -10,7 +10,10 @@ const Laporan = () => {
     const [filteredData, setFilteredData] = useState([]);
 
     const [filters, setFilters] = useState({
-        periode: '',
+        periodeType: '', // '', Harian, Bulanan, Tahunan
+        tanggal: new Date().toISOString().split('T')[0],
+        bulan: new Date().getMonth() + 1,
+        tahun: new Date().getFullYear(),
         jenis: '',
         status: ''
     });
@@ -32,6 +35,9 @@ const Laporan = () => {
                 setStatusOptions(combined);
             }
         } catch (error) {
+            const masukStatuses = ['Proses', 'Selesai', 'Disposisi'];
+            const keluarStatuses = ['Draft', 'Terkirim', 'Arsip'];
+            setStatusOptions([...masukStatuses, ...keluarStatuses]);
             console.error('Error fetching enum options:', error);
         }
     };
@@ -44,7 +50,7 @@ const Laporan = () => {
                 api.get('/surat-keluar')
             ]);
 
-            const normalizedMasuk = resMasuk.data.map(item => ({
+            const normalizedMasuk = (resMasuk.data || []).map(item => ({
                 ...item,
                 id: `M-${item.id}`,
                 raw_id: item.id,
@@ -60,7 +66,7 @@ const Laporan = () => {
                 dibuat_oleh: item.created_by_name
             }));
 
-            const normalizedKeluar = resKeluar.data.map(item => ({
+            const normalizedKeluar = (resKeluar.data || []).map(item => ({
                 ...item,
                 id: `K-${item.id}`,
                 raw_id: item.id,
@@ -82,10 +88,27 @@ const Laporan = () => {
             setFilteredData(combined);
         } catch (error) {
             console.error('Error fetching data for report:', error);
+            setAllData([]);
+            setFilteredData([]);
         } finally {
             setLoading(false);
         }
     };
+
+    const [availableYears, setAvailableYears] = useState([]);
+
+    useEffect(() => {
+        if (allData.length > 0) {
+            const years = [...new Set(allData.map(item => {
+                if (!item.tanggal) return null;
+                return new Date(item.tanggal).getFullYear();
+            }))]
+                .filter(y => y !== null)
+                .sort((a, b) => b - a);
+
+            setAvailableYears(years);
+        }
+    }, [allData]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -103,8 +126,26 @@ const Laporan = () => {
             res = res.filter(item => item.status.toLowerCase() === filters.status.toLowerCase());
         }
 
-        if (filters.periode) {
-            res = res.filter(item => item.tanggal && item.tanggal.startsWith(filters.periode));
+        if (filters.periodeType === 'Harian') {
+            const today = new Date().toISOString().split('T')[0];
+            res = res.filter(item => item.tanggal && item.tanggal.startsWith(today));
+        } else if (filters.periodeType === 'Bulanan') {
+            // Use selected month and year
+            res = res.filter(item => {
+                if (!item.tanggal) return false;
+                const d = new Date(item.tanggal);
+                const filterBulan = filters.bulan ? parseInt(filters.bulan) : (new Date().getMonth() + 1);
+                const filterTahun = filters.tahun ? parseInt(filters.tahun) : new Date().getFullYear();
+                return (d.getMonth() + 1) === filterBulan && d.getFullYear() === filterTahun;
+            });
+        } else if (filters.periodeType === 'Tahunan') {
+            // Use selected year
+            res = res.filter(item => {
+                if (!item.tanggal) return false;
+                const d = new Date(item.tanggal);
+                const filterTahun = filters.tahun ? parseInt(filters.tahun) : new Date().getFullYear();
+                return d.getFullYear() === filterTahun;
+            });
         }
 
         setFilteredData(res);
@@ -128,7 +169,12 @@ const Laporan = () => {
 
     const exportToExcel = () => {
         if (allData.length === 0) {
-            alert('Tidak ada data untuk diexport.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data Kosong',
+                text: 'Tidak ada data untuk diexport.',
+                confirmButtonColor: '#002966'
+            });
             return;
         }
 
@@ -218,6 +264,27 @@ const Laporan = () => {
         XLSX.writeFile(wb, `Laporan_Surat_Lengkap_${dateStr}.xlsx`);
     };
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters]);
+
+    // Get current items
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+    const changePage = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
+
     return (
         <div className="laporan-container">
             <div className="page-header">
@@ -231,16 +298,60 @@ const Laporan = () => {
                     </div>
                 </div>
                 <div className="filter-grid-3-cols">
-                    <div className="filter-input-group">
+                    <div className="filter-input-group" style={{ minWidth: '300px' }}>
                         <label>Periode Laporan</label>
-                        <div className="input-with-icon">
-                            <Calendar size={16} className="icon" />
-                            <input
-                                type="date"
-                                name="periode"
-                                value={filters.periode}
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <select
+                                name="periodeType"
+                                value={filters.periodeType}
                                 onChange={handleFilterChange}
-                            />
+                                style={{ flex: 1 }}
+                            >
+                                <option value="">Semua Waktu</option>
+                                <option value="Harian">Harian</option>
+                                <option value="Bulanan">Bulanan</option>
+                                <option value="Tahunan">Tahunan</option>
+                            </select>
+
+                            {filters.periodeType === 'Bulanan' && (
+                                <>
+                                    <select
+                                        name="bulan"
+                                        value={filters.bulan}
+                                        onChange={handleFilterChange}
+                                        style={{ flex: 1 }}
+                                    >
+                                        {Array.from({ length: 12 }, (_, i) => (
+                                            <option key={i + 1} value={i + 1}>
+                                                {new Date(0, i).toLocaleString('id-ID', { month: 'long' })}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        name="tahun"
+                                        value={filters.tahun}
+                                        onChange={handleFilterChange}
+                                        style={{ flex: 1 }}
+                                    >
+                                        {availableYears.map(year => (
+                                            <option key={year} value={year}>{year}</option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
+
+                            {filters.periodeType === 'Tahunan' && (
+                                <select
+                                    name="tahun"
+                                    value={filters.tahun}
+                                    onChange={handleFilterChange}
+                                    style={{ flex: 1 }}
+                                >
+                                    {availableYears.map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     </div>
                     <div className="filter-input-group">
@@ -305,10 +416,10 @@ const Laporan = () => {
                         <tbody>
                             {loading ? (
                                 <tr><td colSpan="8" className="text-center">Memuat data...</td></tr>
-                            ) : filteredData.length > 0 ? (
-                                filteredData.map((item, index) => (
+                            ) : currentItems.length > 0 ? (
+                                currentItems.map((item, index) => (
                                     <tr key={item.id}>
-                                        <td>{index + 1}</td>
+                                        <td>{indexOfFirstItem + index + 1}</td>
                                         <td className="font-bold">{item.no_surat}</td>
                                         <td>{formatDate(item.tanggal)}</td>
                                         <td>
@@ -334,11 +445,42 @@ const Laporan = () => {
                 </div>
 
                 <div className="pagination">
-                    <p>Menampilkan {filteredData.length} data</p>
+                    <p>Menampilkan {currentItems.length > 0 ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, filteredData.length)}` : '0'} dari {filteredData.length} data</p>
                     <div className="pagination-controls">
-                        <button className="page-btn"><ChevronLeft size={16} /></button>
-                        <button className="page-btn active">1</button>
-                        <button className="page-btn"><ChevronRight size={16} /></button>
+                        <button
+                            className="page-btn"
+                            onClick={() => changePage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+
+                        {/* Simple page numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page => {
+                                // Show first, last, current, and adjacent pages
+                                return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
+                            })
+                            .map((page, index, array) => (
+                                <React.Fragment key={page}>
+                                    {index > 0 && array[index - 1] !== page - 1 && <span className="ellipsis">...</span>}
+                                    <button
+                                        className={`page-btn ${currentPage === page ? 'active' : ''}`}
+                                        onClick={() => changePage(page)}
+                                    >
+                                        {page}
+                                    </button>
+                                </React.Fragment>
+                            ))
+                        }
+
+                        <button
+                            className="page-btn"
+                            onClick={() => changePage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            <ChevronRight size={16} />
+                        </button>
                     </div>
                 </div>
             </div>

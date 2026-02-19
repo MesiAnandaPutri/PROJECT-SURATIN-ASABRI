@@ -35,7 +35,7 @@ const MainLayout = () => {
     };
 
     const getPageSubtitle = (path) => {
-        if (path.includes('/dashboard')) return 'Selamat datang kembali di SURATIN ASABRI';
+        if (path.includes('/dashboard')) return 'Selamat datang kembali di ASABRI SWALAPATRA';
         if (path.includes('/surat-masuk')) return 'Kelola surat masuk';
         if (path.includes('/surat-keluar')) return 'Kelola surat keluar';
         if (path.includes('/users')) return 'Kelola pengguna sistem';

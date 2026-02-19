@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/surat-masuk/{id}', [ApiController::class, 'destroySuratMasuk']);
     Route::post('/surat-masuk/{id}/disposisi', [DisposisiController::class, 'store']);
     Route::get('/surat-masuk/{id}/disposisi/download', [DisposisiController::class, 'download']);
+    Route::get('/disposisi/{disposisiId}/download', [DisposisiController::class, 'downloadSingle']);
     Route::post('/surat-masuk/import', [ApiController::class, 'importSuratMasukCSV']);
     // Surat Keluar
     Route::get('/surat-keluar', [ApiController::class, 'getSuratKeluar']);

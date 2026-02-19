@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './TambahSuratKeluar.css';
 
@@ -24,8 +25,14 @@ const TambahSuratKeluar = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.role === 'pimpinan') {
-            alert('Akses Ditolak. Pimpinan tidak dapat membuat surat.');
-            navigate('/surat-keluar');
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Pimpinan tidak dapat membuat surat.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-keluar');
+            });
             return;
         }
 
@@ -53,7 +60,12 @@ const TambahSuratKeluar = () => {
         if (name === 'tanggal_pembuatan') {
             const selectedYear = new Date(value).getFullYear();
             if (selectedYear !== currentYear) {
-                alert(`Tanggal surat harus berada di tahun ${currentYear}.`);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanggal Tidak Valid',
+                    text: `Tanggal surat harus berada di tahun ${currentYear}.`,
+                    confirmButtonColor: '#002966'
+                });
                 return;
             }
         }
@@ -103,13 +115,10 @@ const TambahSuratKeluar = () => {
     const validate = () => {
         const newErrors = {};
         if (!formData.no_surat) newErrors.no_surat = ['Nomor surat wajib diisi'];
-
         if (!formData.tanggal_pembuatan) newErrors.tanggal_pembuatan = ['Tanggal pembuatan wajib diisi'];
         if (!formData.kategori_berkas) newErrors.kategori_berkas = ['Kategori berkas wajib dipilih'];
         if (!formData.tujuan) newErrors.tujuan = ['Tujuan / Penerima wajib diisi'];
         if (!formData.perihal) newErrors.perihal = ['Perihal wajib diisi'];
-        if (!formData.tingkat_urgensi_penyelesaian) newErrors.tingkat_urgensi_penyelesaian = ['Tingkat urgensi wajib dipilih'];
-        if (!formData.klasifikasi_surat_dinas) newErrors.klasifikasi_surat_dinas = ['Klasifikasi surat dinas wajib dipilih'];
         if (!formData.file) newErrors.file = ['Berkas surat wajib diunggah'];
 
         setErrors(newErrors);
@@ -136,8 +145,14 @@ const TambahSuratKeluar = () => {
             });
 
             await api.post('/surat-keluar', data);
-            alert('Surat keluar berhasil ditambahkan!');
-            navigate('/surat-keluar');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Surat keluar berhasil ditambahkan!',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-keluar');
+            });
         } catch (error) {
             console.error('Error adding surat keluar:', error);
             const responseData = error.response?.data;
@@ -145,7 +160,12 @@ const TambahSuratKeluar = () => {
             if (responseData?.errors) {
                 setErrors(responseData.errors);
             } else {
-                alert(responseData?.message || 'Gagal menambahkan surat keluar.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: responseData?.message || 'Gagal menambahkan surat keluar.',
+                    confirmButtonColor: '#002966'
+                });
             }
         } finally {
             setLoading(false);
@@ -268,7 +288,7 @@ const TambahSuratKeluar = () => {
                         {errors.klasifikasi_surat_dinas && <span className="error-message">{errors.klasifikasi_surat_dinas[0]}</span>}
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ marginBottom: '10px' }}>
                         <label>Keterangan</label>
                         <input
                             type="text"
@@ -280,10 +300,7 @@ const TambahSuratKeluar = () => {
                         />
                         {errors.keterangan && <span className="error-message">{errors.keterangan[0]}</span>}
                     </div>
-                </div>
 
-                <div className="form-section">
-                    <h2 className="section-title">DOKUMEN</h2>
                     <div className="form-row">
                         <label>Pilih Dokumen</label>
                         <div

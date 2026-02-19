@@ -1,10 +1,20 @@
 @import url("https://use.typekit.net/vnu2xdo.css");
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   font-family: 'museo-sans', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 500;
+
+  /* Brand Colors */
+  --color-primary: #002966;
+  /* Biru */
+  --color-accent: #CCA600;
+  /* Kuning Emas */
+  --color-white: #FFFFFF;
+  /* Putih */
+  --color-bg-light: #f8faff;
 
   color-scheme: light;
 

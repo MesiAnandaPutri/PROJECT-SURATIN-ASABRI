@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './EditSuratKeluar.css';
 
@@ -25,8 +26,14 @@ const EditSuratKeluar = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.role === 'pimpinan') {
-            alert('Akses Ditolak. Pimpinan tidak dapat mengedit surat.');
-            navigate('/surat-keluar');
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Pimpinan tidak dapat mengedit surat.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-keluar');
+            });
             return;
         }
 
@@ -67,8 +74,14 @@ const EditSuratKeluar = () => {
             }
         } catch (error) {
             console.error('Error fetching surat keluar detail:', error);
-            alert('Gagal mengambil data surat keluar.');
-            navigate('/surat-keluar');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Gagal mengambil data surat keluar.',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-keluar');
+            });
         } finally {
             setLoading(false);
         }
@@ -104,7 +117,12 @@ const EditSuratKeluar = () => {
         if (name === 'tanggal_pembuatan') {
             const selectedYear = new Date(value).getFullYear();
             if (selectedYear !== currentYear) {
-                alert(`Tanggal surat harus berada di tahun ${currentYear}.`);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanggal Tidak Valid',
+                    text: `Tanggal surat harus berada di tahun ${currentYear}.`,
+                    confirmButtonColor: '#002966'
+                });
                 return;
             }
         }
@@ -136,11 +154,22 @@ const EditSuratKeluar = () => {
             delete payload.file;
 
             await api.put(`/surat-keluar/${id}`, payload);
-            alert('Surat keluar berhasil diperbarui!');
-            navigate('/surat-keluar');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Surat keluar berhasil diperbarui!',
+                confirmButtonColor: '#002966'
+            }).then(() => {
+                navigate('/surat-keluar');
+            });
         } catch (error) {
             console.error('Error updating surat keluar:', error);
-            alert('Gagal memperbarui data surat keluar.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Update',
+                text: 'Gagal memperbarui data surat keluar.',
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setSubmitting(false);
         }
@@ -245,7 +274,7 @@ const EditSuratKeluar = () => {
                         />
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ marginBottom: '10px' }}>
                         <label>Nomor Resi (Opsional)</label>
                         <input
                             type="text"
@@ -255,9 +284,7 @@ const EditSuratKeluar = () => {
                             placeholder="Masukkan nomor resi jika sudah ada"
                         />
                     </div>
-                </div>
-                <div className="form-section">
-                    <h2 className="section-title">DOKUMEN</h2>
+
                     <div className="form-row">
                         <label>Pilih Dokumen</label>
                         <div className="upload-box">

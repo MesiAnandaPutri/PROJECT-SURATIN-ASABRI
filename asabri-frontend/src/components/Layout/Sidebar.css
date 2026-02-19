@@ -1,19 +1,19 @@
 :root {
-    --sidebar-bg: linear-gradient(180deg, #001f5b 0%, #00143a 100%);
+    --sidebar-bg: linear-gradient(180deg, #002966 0%, #00143a 100%);
     /* Modern Deep Navy Gradient */
     --sidebar-text: #ffffff;
     --sidebar-active-bg: rgba(255, 255, 255, 0.12);
-    --sidebar-active-accent: #FFC107;
+    --sidebar-active-accent: var(--color-accent);
     /* Yellow/Gold */
     --hover-bg: rgba(255, 255, 255, 0.08);
-    --sidebar-shadow: 10px 0 30px rgba(0, 31, 91, 0.15);
+    --sidebar-shadow: 10px 0 30px rgba(0, 41, 102, 0.15);
 }
 
 /* Sidebar Transition and Mobile Styles */
 .sidebar {
     width: 260px;
     height: 100vh;
-    background: linear-gradient(180deg, rgba(0, 31, 91, 0.85) 0%, rgba(0, 20, 58, 0.95) 100%),
+    background: linear-gradient(180deg, rgba(0, 41, 102, 0.85) 0%, rgba(0, 20, 58, 0.95) 100%),
         url('../../pages/image/pure1.png');
     background-size: cover;
     background-position: center;
@@ -58,8 +58,8 @@
 
 .logo-box {
     background-color: white;
-    width: 42px;
-    height: 42px;
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
     display: flex;
     justify-content: center;
@@ -74,7 +74,7 @@
 }
 
 .sidebar-logo {
-    height: 24px;
+    height: 30px;
     width: auto;
     object-fit: contain;
 }
@@ -85,13 +85,10 @@
     justify-content: center;
 }
 
-.sidebar-brand-text h2 {
-    font-size: 18px;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: 0.5px;
-    font-family: 'Inter', sans-serif;
+.sidebar-brand-text .sidebar-brand-img {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
 }
 
 .sidebar-brand-text span {

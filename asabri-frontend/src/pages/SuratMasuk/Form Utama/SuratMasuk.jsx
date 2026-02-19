@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Send, Edit2, Trash2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom';
 import api from '../../../services/api';
 import DisposisiModal from '../Disposisi/DisposisiModal';
 import DetailSuratModal from '../DetailSurat/DetailSuratModal';
 import HapusSuratMasukModal from '../HapusSurat/HapusSuratMasukModal';
 import ImportModal from '../Import/ImportModal';
 import { useToast } from '../../../context/ToastContext';
+import Swal from 'sweetalert2';
 import './SuratMasuk.css';
 
 const SuratMasuk = () => {
@@ -18,6 +19,26 @@ const SuratMasuk = () => {
         startDate: '',
         endDate: ''
     });
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+    const [years, setYears] = useState([]);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
+
+    useEffect(() => {
+        fetchYears();
+    }, []);
+
+    const fetchYears = async () => {
+        try {
+            const response = await api.get('/enum-options');
+            if (response.data && response.data.surat_masuk_years) {
+                setYears(response.data.surat_masuk_years);
+            }
+        } catch (error) {
+            console.error('Error fetching years:', error);
+        }
+    };
+
     const [selectedSuratId, setSelectedSuratId] = useState(null);
     const [showDisposisi, setShowDisposisi] = useState(false);
 
@@ -37,7 +58,7 @@ const SuratMasuk = () => {
 
     useEffect(() => {
         fetchSuratMasuk();
-    }, []);
+    }, [selectedYear]);
 
     useEffect(() => {
         if (location.state?.targetSuratId && suratData.length > 0) {
@@ -50,8 +71,11 @@ const SuratMasuk = () => {
     }, [location.state, suratData]);
 
     const fetchSuratMasuk = async () => {
+        setLoading(true);
         try {
-            const response = await api.get('/surat-masuk');
+            const response = await api.get('/surat-masuk', {
+                params: { year: selectedYear }
+            });
             setSuratData(response.data);
         } catch (error) {
             console.error('Error fetching surat masuk:', error);
@@ -85,7 +109,11 @@ const SuratMasuk = () => {
             }
         }
 
-        return matchesSearch && matchesDateRange;
+        const matchesStatus = statusFilter
+            ? (item.status || '').toLowerCase() === statusFilter.toLowerCase()
+            : true;
+
+        return matchesSearch && matchesDateRange && matchesStatus;
     });
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -149,7 +177,12 @@ const SuratMasuk = () => {
         } catch (error) {
             console.error('Gagal mengirim disposisi:', error);
             const msg = error.response?.data?.message || 'Terjadi kesalahan saat memproses disposisi.';
-            alert(msg);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Disposisi',
+                text: msg,
+                confirmButtonColor: '#002966'
+            });
         }
     };
 
@@ -179,7 +212,12 @@ const SuratMasuk = () => {
             addToast('Surat berhasil dihapus.', 'success');
         } catch (error) {
             console.error('Error deleting surat:', error);
-            alert('Gagal menghapus surat.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menghapus',
+                text: 'Gagal menghapus surat.',
+                confirmButtonColor: '#002966'
+            });
         }
     };
 
@@ -216,6 +254,18 @@ const SuratMasuk = () => {
                     </div>
 
                     <div className="filter-dropdowns">
+                        <select
+                            className="filter-select"
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(e.target.value)}
+                            style={{ width: '150px' }}
+                        >
+                            <option value="">Semua Tahun</option>
+                            {years.map(year => (
+                                <option key={year} value={year}>{year}</option>
+                            ))}
+                        </select>
+
                         <div className="date-filter">
                             <label>Dari:</label>
                             <input
@@ -241,15 +291,15 @@ const SuratMasuk = () => {
                     <table className="custom-table">
                         <thead>
                             <tr>
-                                <th style={{ width: '50px' }}>No</th>
-                                <th>No. Surat</th>
-                                <th>Tgl. Terima</th>
-                                <th>Tgl. Masuk</th>
-                                <th>Pengirim</th>
-                                <th>Perihal</th>
-                                <th>Status</th>
-                                <th>Detail</th>
-                                <th>Aksi</th>
+                                <th style={{ width: '40px' }}>No</th>
+                                <th style={{ width: '15%' }}>No. Surat</th>
+                                <th style={{ width: '10%' }}>Tgl. Terima</th>
+                                <th style={{ width: '10%' }}>Tgl. Masuk</th>
+                                <th style={{ width: '14%' }}>Pengirim</th>
+                                <th style={{ width: '18%' }}>Perihal</th>
+                                <th style={{ width: '8%' }}>Status</th>
+                                <th style={{ width: '7%' }}>Detail</th>
+                                <th style={{ width: '80px' }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -370,7 +420,7 @@ const SuratMasuk = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             <DisposisiModal
                 isOpen={showDisposisi}

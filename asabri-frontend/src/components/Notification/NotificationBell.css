@@ -8,7 +8,7 @@
 }
 
 .notification-bell {
-    color: #f59e0b;
+    color: var(--color-accent);
     transition: color 0.2s;
 }
 

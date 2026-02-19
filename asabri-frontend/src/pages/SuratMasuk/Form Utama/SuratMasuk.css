@@ -169,17 +169,19 @@
 .custom-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 900px;
 }
 
 .custom-table th {
     background: #002966;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.75rem;
     text-align: left;
     font-weight: 600;
     font-size: 0.8rem;
     color: white;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .custom-table th:first-child {
@@ -290,6 +292,7 @@
 .action-buttons {
     display: flex;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .btn-icon {

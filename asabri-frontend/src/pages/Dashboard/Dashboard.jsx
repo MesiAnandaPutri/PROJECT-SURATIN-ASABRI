@@ -16,12 +16,13 @@ const Dashboard = () => {
                 const response = await api.get('/dashboard');
                 const data = response.data || {};
 
-                const rawStats = data.stats || { total: '0', masuk: '0', keluar: '0', pending: '0' };
+                const rawStats = data.stats || { total: '0', masuk: '0', keluar: '0', pending_masuk: '0', pending_keluar: '0' };
                 const statsData = [
                     { icon: Mail, title: 'Total Surat', value: rawStats.total, subtitle: 'Keseluruhan dokumen', color: 'blue' },
                     { icon: Inbox, title: 'Surat Masuk', value: rawStats.masuk, subtitle: 'Dokumen masuk', color: 'green' },
                     { icon: Send, title: 'Surat Keluar', value: rawStats.keluar, subtitle: 'Dokumen keluar', color: 'red' },
-                    { icon: Clock, title: 'Pending', value: rawStats.pending, subtitle: 'Menunggu proses', color: 'yellow' },
+                    { icon: Clock, title: 'Pending Masuk', value: rawStats.pending_masuk, subtitle: 'Surat masuk menunggu disposisi', color: 'orange', link: '/surat-masuk?status=proses' },
+                    { icon: Clock, title: 'Pending Keluar', value: rawStats.pending_keluar, subtitle: 'Surat keluar menunggu pengiriman', color: 'yellow', link: '/surat-keluar?status=draft' },
                 ];
 
                 setStats(statsData);
@@ -44,9 +45,14 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <div className="stats-grid">
-                {stats.map((stat, index) => (
+            <div className="stats-row">
+                {stats.slice(0, 3).map((stat, index) => (
                     <StatsCard key={index} {...stat} />
+                ))}
+            </div>
+            <div className="stats-row">
+                {stats.slice(3).map((stat, index) => (
+                    <StatsCard key={index + 3} {...stat} />
                 ))}
             </div>
 
