@@ -74,18 +74,56 @@ const EditSuratKeluar = () => {
         }
     };
 
+    const PREFIXES = {
+        'berita acara': 'BA/',
+        'memo': 'Memo/',
+        'mou': 'MoU/',
+        'nota dinas': 'ND/',
+        'pemberitahuan': 'Pem/',
+        'pengumuman': 'Peng/',
+        'surat dinas': 'S/',
+        'surat edaran': 'SE/',
+        'surat keterangan': 'SKET/',
+        'surat kuasa': 'SKU/',
+        'surat perintah': 'SPRIN/',
+        'surat perintah perjalanan dinas': 'SPPD/',
+        'surat perjanjian kerja sama': 'SPKS/',
+        'tinjau skep': 'S/',
+        'surat pengantar': 'P/',
+        'sppi/pendaftaran keluarga': 'S/',
+        'surat gaji terusan': 'S/',
+    };
+
+    const currentYear = new Date().getFullYear();
+    const minDate = `${currentYear}-01-01`;
+    const maxDate = `${currentYear}-12-31`;
+
     const handleChange = async (e) => {
         const { name, value } = e.target;
+
+        if (name === 'tanggal_pembuatan') {
+            const selectedYear = new Date(value).getFullYear();
+            if (selectedYear !== currentYear) {
+                alert(`Tanggal surat harus berada di tahun ${currentYear}.`);
+                return;
+            }
+        }
+
         setFormData(prev => ({ ...prev, [name]: value }));
 
         if (name === 'kategori_berkas' && value) {
-            try {
-                const response = await api.get(`/surat-keluar-next-number?category=${value}`);
-                if (response.data && response.data.number) {
-                    setFormData(prev => ({ ...prev, no_surat: response.data.number }));
+            // New logic: preserve number, change prefix
+            const currentNoSurat = formData.no_surat;
+            const newPrefix = PREFIXES[value.toLowerCase()];
+
+            if (newPrefix && currentNoSurat) {
+                // Find the first digit to split prefix and number/rest
+                const match = currentNoSurat.match(/(\d+.*)$/);
+                if (match) {
+                    const numberPart = match[1];
+                    const newNoSurat = newPrefix + numberPart;
+                    setFormData(prev => ({ ...prev, no_surat: newNoSurat }));
                 }
-            } catch (error) {
-                console.error('Error fetching next number:', error);
             }
         }
     };

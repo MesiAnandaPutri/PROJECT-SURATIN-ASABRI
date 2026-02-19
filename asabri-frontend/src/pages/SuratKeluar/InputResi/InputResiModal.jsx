@@ -5,23 +5,42 @@ import './InputResiModal.css';
 
 const InputResiModal = ({ isOpen, onClose, onSuccess, surat }) => {
     const [noResi, setNoResi] = useState('');
+    const [fileResi, setFileResi] = useState(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isOpen && surat) {
             setNoResi(surat.no_resi || '');
+            setFileResi(null); // Reset file on open
         }
     }, [isOpen, surat]);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFileResi(file);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            await api.put(`/surat-keluar/${surat.id}`, {
-                ...surat,
-                no_resi: noResi
+            const formData = new FormData();
+            formData.append('_method', 'PUT'); // Method spoofing for Laravel
+            formData.append('no_resi', noResi);
+            if (fileResi) {
+                formData.append('file_resi', fileResi);
+            }
+
+            // We use POST with _method: PUT for file uploads on update
+            await api.post(`/surat-keluar/${surat.id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
+
             onSuccess();
             onClose();
         } catch (error) {
@@ -60,8 +79,24 @@ const InputResiModal = ({ isOpen, onClose, onSuccess, surat }) => {
                                 autoFocus
                             />
                         </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Upload Bukti Resi (Opsional)</label>
+                        <input
+                            type="file"
+                            onChange={handleFileChange}
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            className="resi-file-input"
+                        />
+                        <small className="help-text" style={{ marginTop: '4px', display: 'block' }}>
+                            Max 10MB. (PDF, JPG, PNG, DOCX)
+                        </small>
+                    </div>
+
+                    <div className="form-group">
                         <small className="help-text">
-                            Mengisi nomor resi akan otomatis mengubah status menjadi <strong>Terkirim</strong>.
+                            Mengisi nomor resi atau mengupload bukti akan otomatis mengubah status menjadi <strong>Terkirim</strong>.
                         </small>
                     </div>
 

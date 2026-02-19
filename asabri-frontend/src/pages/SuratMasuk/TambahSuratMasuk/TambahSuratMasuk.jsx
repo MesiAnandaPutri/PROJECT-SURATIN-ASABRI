@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './TambahSuratMasuk.css';
 
@@ -101,18 +102,38 @@ const TambahSuratMasuk = () => {
                 }
             });
 
-            await api.post('/surat-masuk', data);
+            console.log('Sending request to /surat-masuk...');
+            const response = await api.post('/surat-masuk', data);
+            console.log('Response received:', response);
 
-            alert('Surat masuk berhasil ditambahkan!');
-            navigate('/surat-masuk');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Surat masuk berhasil ditambahkan!',
+                confirmButtonColor: '#002966',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('User confirmed. Navigating to /surat-masuk');
+                    navigate('/surat-masuk');
+                } else {
+                    // Fallback in case of other closing methods
+                    navigate('/surat-masuk');
+                }
+            });
         } catch (error) {
-            console.error('Error adding surat masuk:', error);
+            console.error('Error adding surat masuk (Detailed):', error);
             const responseData = error.response?.data;
 
             if (responseData?.errors) {
                 setErrors(responseData.errors);
             } else {
-                alert(responseData?.message || 'Gagal menambahkan surat masuk.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: responseData?.message || 'Gagal menambahkan surat masuk.',
+                    confirmButtonColor: '#002966'
+                });
             }
         } finally {
             setLoading(false);
@@ -221,7 +242,7 @@ const TambahSuratMasuk = () => {
                         {errors.sumber_berkas && <span className="error-message">{errors.sumber_berkas[0]}</span>}
                     </div>
 
-                    <div className="form-row">
+                    <div className="form-row" style={{ marginBottom: '10px' }}>
                         <label>Keterangan</label>
                         <input
                             type="text"
@@ -233,10 +254,6 @@ const TambahSuratMasuk = () => {
                         />
                         {errors.keterangan && <span className="error-message">{errors.keterangan[0]}</span>}
                     </div>
-                </div>
-
-                <div className="form-section">
-                    <h2 className="section-title">DOKUMEN</h2>
                     <div className="form-row">
                         <label>Pilih Dokumen</label>
                         <input

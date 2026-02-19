@@ -94,12 +94,7 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                                 <div className="data-value capitalize">{surat.sumber_berkas || '-'}</div>
                             </div>
 
-                            <div className="data-group">
-                                <label>Input By</label>
-                                <div className="data-value font-medium">
-                                    {surat.created_by_name || (surat.user ? surat.user.nama_lengkap : '-')}
-                                </div>
-                            </div>
+
 
 
                             <div className="data-group">

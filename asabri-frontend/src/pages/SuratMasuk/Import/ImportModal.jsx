@@ -64,7 +64,6 @@ const ImportModal = ({ isOpen, onClose, onSuccess }) => {
 
     const downloadTemplate = () => {
         const headers = [
-            'created_by_name',
             'no_surat',
             'pengirim',
             'tanggal_terima_surat',
@@ -75,13 +74,12 @@ const ImportModal = ({ isOpen, onClose, onSuccess }) => {
         ];
 
         const exampleRow = [
-            'Nama Pembuat',
             'SM/001/2026',
             'PT. Contoh Indonesia',
             '2026-02-01',
             '2026-02-01',
             'Permohonan Kerjasama',
-            'eksternal',
+            'internal',
             'Catatan tambahan'
         ];
 

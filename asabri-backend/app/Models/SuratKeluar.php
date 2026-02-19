@@ -23,7 +23,8 @@ class SuratKeluar extends Model
         'tanggal_pembuatan',
         'no_resi',
         'user_id',
-        'created_by_name'
+        'created_by_name',
+        'file_resi'
     ];
 
     public function user()

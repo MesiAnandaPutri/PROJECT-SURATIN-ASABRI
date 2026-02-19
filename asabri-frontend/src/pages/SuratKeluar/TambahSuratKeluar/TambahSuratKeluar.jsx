@@ -43,9 +43,23 @@ const TambahSuratKeluar = () => {
         }
     };
 
+    const currentYear = new Date().getFullYear();
+    const minDate = `${currentYear}-01-01`;
+    const maxDate = `${currentYear}-12-31`;
+
     const handleChange = async (e) => {
         const { name, value } = e.target;
+
+        if (name === 'tanggal_pembuatan') {
+            const selectedYear = new Date(value).getFullYear();
+            if (selectedYear !== currentYear) {
+                alert(`Tanggal surat harus berada di tahun ${currentYear}.`);
+                return;
+            }
+        }
+
         setFormData(prev => ({ ...prev, [name]: value }));
+
 
         if (errors[name]) {
             setErrors(prev => {

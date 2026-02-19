@@ -342,6 +342,7 @@ class ApiController extends Controller
                 'keterangan' => 'nullable|string',
                 'no_resi' => 'nullable|string',
                 'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:51200',
+                'file_resi' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // Max 10MB, allow images/docs
             ]);
 
             // Ensure we don't save nulls for required DB columns if they are present in request but null
@@ -353,7 +354,7 @@ class ApiController extends Controller
             if (array_key_exists('kategori_berkas', $validated))
                 $validated['kategori_berkas'] = $validated['kategori_berkas'] ?? 'surat dinas';
 
-            // Handle File Replacement
+            // Handle File Replacement (Surat File)
             if ($request->hasFile('file')) {
                 // Delete old file if exists
                 if ($surat->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($surat->file_path)) {
@@ -366,10 +367,38 @@ class ApiController extends Controller
                 $validated['file_path'] = $path;
             }
 
-            // Logic for automation status based on no_resi
-            if (isset($request->no_resi)) {
-                // If no_resi is provided (even if empty string), update status logic can appply
-                $validated['status'] = !empty($request->no_resi) ? 'terkirim' : 'draft';
+            // Handle File Resi Upload
+            if ($request->hasFile('file_resi')) {
+                // Delete old resi file if exists
+                if ($surat->file_resi && \Illuminate\Support\Facades\Storage::disk('public')->exists($surat->file_resi)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($surat->file_resi);
+                }
+
+                $fileResi = $request->file('file_resi');
+                $filenameResi = 'resi_' . time() . '_' . $fileResi->getClientOriginalName();
+                $pathResi = $fileResi->storeAs('resi-surat-keluar', $filenameResi, 'public');
+                $validated['file_resi'] = $pathResi;
+            }
+
+            // Logic for automation status based on no_resi or file_resi
+            if (isset($request->no_resi) || $request->hasFile('file_resi')) {
+                // Check if we have either a resi number OR a resi file
+                $hasResiNumber = !empty($request->no_resi) || (!isset($request->no_resi) && !empty($surat->no_resi));
+                $hasResiFile = $request->hasFile('file_resi') || (!empty($surat->file_resi));
+
+                // If either exists, status is terkirim. 
+                // Note: logic here simplifies to complying with user request that inputting resi (now includes file) makes it terkirim.
+                // We prioritize the incoming request data.
+
+                $newNoResi = $request->has('no_resi') ? $request->no_resi : $surat->no_resi;
+                $newFileResi = $request->hasFile('file_resi') ? true : !empty($surat->file_resi);
+
+                if (!empty($newNoResi) || $newFileResi) {
+                    $validated['status'] = 'terkirim';
+                } else {
+                    // If both are empty/removed, maybe revert to draft? User didn't specify, but safe to keep current status or default logic.
+                    // For now, let's just set to terkirim if they provide resi stuff.
+                }
             }
 
             $surat->update($validated);

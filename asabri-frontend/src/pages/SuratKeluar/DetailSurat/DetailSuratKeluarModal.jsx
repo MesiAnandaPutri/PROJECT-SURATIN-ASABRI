@@ -53,6 +53,24 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
                                 </div>
                             </div>
 
+                            {surat.file_resi && (
+                                <div className="data-group">
+                                    <label>Bukti Resi</label>
+                                    <div className="data-value">
+                                        <a
+                                            href={`http://localhost:8000/storage/${surat.file_resi}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="resi-link"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#dc2626', textDecoration: 'none', fontSize: '0.9rem' }}
+                                        >
+                                            <FileText size={16} />
+                                            Lihat Bukti
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="data-group">
                                 <label>Urgensi & Klasifikasi</label>
                                 <div className="badge-row">

@@ -104,8 +104,8 @@
 <body>
     <div class="header">
         <div style="margin-bottom: 10px;">
-            <img src="{{ public_path('LogoAsabri1.png') }}" alt="ASABRI" class="logo" style="width: 200px;"
-                onerror="this.style.display='none'">
+            <img src="{{ public_path('LogoAsabri1.png') }}" alt="ASABRI" class="logo"
+                style="width: 200px; margin-left: 50px;" onerror="this.style.display='none'">
         </div>
         <div class="title">LEMBAR DISPOSISI</div>
     </div>
@@ -179,9 +179,11 @@
                     @endphp
                     <ol style="margin: 0; padding-left: 20px;">
                         @foreach($items as $item)
-                            <li class="checkbox-item">
+                            <li class="checkbox-item"
+                                style="{{ strcasecmp($item['val'], $selectedInstruction) == 0 ? 'font-weight: bold;' : '' }}">
                                 @if(strcasecmp($item['val'], $selectedInstruction) == 0)
-                                    <strong>{!! $item['html'] !!}</strong>
+                                    <strong>{!! $item['html'] !!} <span
+                                            style="font-family: DejaVu Sans, sans-serif;">&#10003;</span></strong>
                                 @else
                                     {!! $item['html'] !!}
                                 @endif
