@@ -230,15 +230,13 @@ class ApiController extends Controller
 
             // Notify Pimpinan
             try {
-                // Notification logic temporarily commented out/simplified for debugging stability
-                /* 
                 Notification::create([
                     'role' => 'pimpinan',
                     'title' => 'Surat Masuk Baru',
-                    'message' => "Surat No: {$surat->no_surat} memerlukan disposisi.",
+                    'message' => "Surat No: {$surat->no_surat} dari {$surat->pengirim} memerlukan disposisi.",
                     'surat_masuk_id' => $surat->id,
+                    'is_read' => false,
                 ]);
-                */
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to create notification: ' . $e->getMessage());
             }
@@ -418,24 +416,22 @@ class ApiController extends Controller
                 $validated['file_resi'] = $pathResi;
             }
 
-            // Logic for automation status based on no_resi or file_resi
-            if (isset($request->no_resi) || $request->hasFile('file_resi')) {
-                // Check if we have either a resi number OR a resi file
-                $hasResiNumber = !empty($request->no_resi) || (!isset($request->no_resi) && !empty($surat->no_resi));
-                $hasResiFile = $request->hasFile('file_resi') || (!empty($surat->file_resi));
+            // Logic: Tidak Ada Resi → selesai, Ada Resi → terkirim, Hapus Resi → draft
+            if ($request->input('tidak_ada_resi') == '1') {
+                // Pilihan "Tidak Ada Resi" — kosongkan no_resi dan set status selesai
+                $validated['no_resi'] = null;
+                $validated['status'] = 'selesai';
+            } elseif (array_key_exists('no_resi', $validated) || $request->hasFile('file_resi')) {
+                // Determine the new state of resi and file
+                $newNoResi = array_key_exists('no_resi', $validated) ? $validated['no_resi'] : $surat->no_resi;
+                $hasFile = $request->hasFile('file_resi') ? true : !empty($surat->file_resi);
 
-                // If either exists, status is terkirim. 
-                // Note: logic here simplifies to complying with user request that inputting resi (now includes file) makes it terkirim.
-                // We prioritize the incoming request data.
-
-                $newNoResi = $request->has('no_resi') ? $request->no_resi : $surat->no_resi;
-                $newFileResi = $request->hasFile('file_resi') ? true : !empty($surat->file_resi);
-
-                if (!empty($newNoResi) || $newFileResi) {
-                    $validated['status'] = 'terkirim';
+                if (empty($newNoResi) && !$hasFile) {
+                    // Jika keduanya kosong (dihapus), kembalikan ke draft
+                    $validated['status'] = 'draft';
                 } else {
-                    // If both are empty/removed, maybe revert to draft? User didn't specify, but safe to keep current status or default logic.
-                    // For now, let's just set to terkirim if they provide resi stuff.
+                    // Jika ada salah satu, status terkirim
+                    $validated['status'] = 'terkirim';
                 }
             }
 

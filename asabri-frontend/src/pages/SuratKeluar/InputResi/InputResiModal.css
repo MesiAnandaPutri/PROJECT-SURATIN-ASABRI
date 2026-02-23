@@ -71,3 +71,72 @@
     background: #93c5fd;
     cursor: not-allowed;
 }
+
+/* ===== RESI CHOICE CARDS ===== */
+.resi-choice-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.resi-choice-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+    color: #64748b;
+    position: relative;
+    user-select: none;
+}
+
+.resi-choice-card:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+}
+
+.resi-choice-card.active {
+    border-color: #002966;
+    background: #eff6ff;
+    color: #002966;
+}
+
+.resi-choice-card.active.tidak {
+    border-color: #EF6C00;
+    background: #fff8f0;
+    color: #EF6C00;
+}
+
+.resi-choice-card span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.resi-radio {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    background: white;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    transition: all 0.2s;
+}
+
+.resi-radio.checked {
+    border-color: #002966;
+    background: #002966;
+    box-shadow: inset 0 0 0 3px white;
+}
+
+.resi-radio.checked.tidak {
+    border-color: #EF6C00;
+    background: #EF6C00;
+}

@@ -21,8 +21,8 @@ const Dashboard = () => {
                     { icon: Mail, title: 'Total Surat', value: rawStats.total, subtitle: 'Keseluruhan dokumen', color: 'blue' },
                     { icon: Inbox, title: 'Surat Masuk', value: rawStats.masuk, subtitle: 'Dokumen masuk', color: 'green' },
                     { icon: Send, title: 'Surat Keluar', value: rawStats.keluar, subtitle: 'Dokumen keluar', color: 'red' },
-                    { icon: Clock, title: 'Pending Masuk', value: rawStats.pending_masuk, subtitle: 'Surat masuk menunggu disposisi', color: 'orange', link: '/surat-masuk?status=proses' },
-                    { icon: Clock, title: 'Pending Keluar', value: rawStats.pending_keluar, subtitle: 'Surat keluar menunggu pengiriman', color: 'yellow', link: '/surat-keluar?status=draft' },
+                    { icon: Clock, title: 'Pending Surat Masuk', value: rawStats.pending_masuk, subtitle: 'Surat masuk menunggu disposisi', color: 'orange', link: '/surat-masuk?status=proses' },
+                    { icon: Clock, title: 'Pending Surat Keluar', value: rawStats.pending_keluar, subtitle: 'Surat keluar menunggu proses', color: 'yellow', link: '/surat-keluar?status=draft' },
                 ];
 
                 setStats(statsData);

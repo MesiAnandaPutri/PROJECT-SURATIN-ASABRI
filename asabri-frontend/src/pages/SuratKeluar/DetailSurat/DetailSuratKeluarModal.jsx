@@ -11,6 +11,10 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
         return new Date(dateString).toLocaleDateString('id-ID', options);
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
         <div className="modal-overlay">
             <div className="detail-modal-container">
@@ -58,7 +62,7 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
                                     <label>Bukti Resi</label>
                                     <div className="data-value">
                                         <a
-                                            href={`http://localhost:8000/storage/${surat.file_resi}`}
+                                            href={`/storage/${surat.file_resi}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="resi-link"
@@ -112,7 +116,7 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
                                 <h3>Preview Dokumen</h3>
                                 {surat.file_path && (
                                     <a
-                                        href={`http://localhost:8000/storage/${surat.file_path}`}
+                                        href={`/storage/${surat.file_path}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn-expand"
@@ -144,7 +148,7 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
                 <div className="modal-footer centered-footer">
                     {surat.file_path ? (
                         <a
-                            href={`http://localhost:8000/storage/${surat.file_path}`}
+                            href={`/storage/${surat.file_path}`}
                             download
                             className="btn-action btn-download"
                             style={{ textDecoration: 'none' }}
@@ -158,7 +162,7 @@ const DetailSuratKeluarModal = ({ isOpen, onClose, surat }) => {
                             No File
                         </button>
                     )}
-                    <button className="btn-action btn-print">
+                    <button className="btn-action btn-print" onClick={handlePrint}>
                         <Printer size={16} />
                         Cetak
                     </button>

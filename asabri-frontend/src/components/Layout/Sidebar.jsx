@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Inbox, Send, FileBarChart, Users, LogOut, X } from 'lucide-react';
+import Swal from 'sweetalert2';
 import './Sidebar.css';
 import LogoAsabri2 from '../../pages/image/LogoAsabri2.png';
 import AsabriText from '../../pages/image/Asabri.png';
@@ -20,8 +21,20 @@ const Sidebar = ({ isOpen, onClose }) => {
     const userRole = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Staff';
     const userInitial = displayName.charAt(0).toUpperCase();
 
-    const handleLogout = () => {
-        if (window.confirm('Apakah Anda yakin ingin keluar?')) {
+    const handleLogout = async () => {
+        const result = await Swal.fire({
+            title: 'Keluar dari Sistem?',
+            text: 'Apakah Anda yakin ingin keluar?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#002966',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Batal',
+            borderRadius: '12px',
+        });
+
+        if (result.isConfirmed) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
@@ -37,7 +50,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
                     <div className="sidebar-brand-text">
                         <img src={AsabriText} alt="ASABRI" className="sidebar-brand-img" />
-                        <span>Swalapatra</span>
                     </div>
                 </div>
                 <button className="sidebar-close-btn" onClick={onClose}>

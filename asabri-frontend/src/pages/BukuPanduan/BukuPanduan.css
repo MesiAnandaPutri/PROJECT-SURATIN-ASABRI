@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.buku-panduan-container {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-height: calc(100vh - 100px);
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid #e2e8f0;
+    max-width: 1000px;
+    margin: 0 auto;
+    /* Center the container */
+    position: relative;
+    max-height: 800px;
+}
+
+/* Content Area Styles */
+.panduan-content-area {
+    flex: 1;
+    padding: 30px 80px 100px;
+    /* Reduced from 60px to 30px to move title up */
+    overflow-y: auto;
+    background-color: #ffffff;
+    scroll-behavior: smooth;
+    text-align: center;
+    /* Center content for PPT feeling */
+}
+
+/* Typography */
+.panduan-header {
+    margin-bottom: 20px;
+    /* Reduced from 40px to 20px */
+}
+
+.panduan-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.panduan-subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.panduan-section {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+    /* Keep text left-aligned for readability */
+}
+
+.panduan-section h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 15px;
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panduan-text {
+    line-height: 1.8;
+    color: #475569;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+/* Lists */
+.panduan-list,
+.panduan-steps {
+    margin-bottom: 25px;
+    padding-left: 25px;
+    color: #475569;
+}
+
+.panduan-list li,
+.panduan-steps li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+/* Special Boxes */
+.panduan-note,
+.panduan-tip,
+.panduan-warning {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.panduan-note {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+}
+
+.panduan-tip {
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+}
+
+.panduan-warning {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+}
+
+/* Image Containers - Screenshots */
+.panduan-image-container {
+    margin: 30px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.image-frame {
+    width: 100%;
+    max-width: 700px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    /* Elegant shadow for screenshot */
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease;
+}
+
+.image-frame:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.panduan-screenshot {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.image-caption {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* Navigation Bar */
+.panduan-navigation {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 10;
+}
+
+.nav-progress {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    /* Pill shape */
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-nav.prev {
+    background-color: white;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.btn-nav.prev:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.btn-nav.next {
+    background-color: #002966;
+    color: white;
+}
+
+.btn-nav.next:hover:not(:disabled) {
+    background-color: #001a40;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 768px) {
+    .panduan-content-area {
+        padding: 40px 20px 100px;
+    }
+
+    .panduan-navigation {
+        padding: 0 20px;
+    }
+
+    .btn-nav span {
+        display: none;
+        /* Hide text on small screens, maximize space */
+    }
+
+    .btn-nav {
+        padding: 12px;
+        /* Just icon padding */
+        border-radius: 50%;
+        /* Circle buttons */
+    }
+}

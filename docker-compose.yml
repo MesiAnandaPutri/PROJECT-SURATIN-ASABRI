@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PHP Service
+  app:
+    build:
+      context: ./asabri-backend
+      dockerfile: Dockerfile
+    image: asabri-backend
+    container_name: asabri-backend-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - ./asabri-backend:/var/www
+    networks:
+      - asabri-network
+
+  # Nginx Service
+  web:
+    image: nginx:alpine
+    container_name: asabri-backend-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./asabri-backend:/var/www
+      - ./asabri-backend/docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - asabri-network
+
+  # Database Service
+  db:
+    image: mysql:8.0
+    container_name: asabri-db
+    restart: unless-stopped
+    tty: true
+    command: --port=3307
+    ports:
+      - "3307:3307"
+    environment:
+      MYSQL_DATABASE: asabri_suratin
+      MYSQL_ROOT_PASSWORD: SandiMySQL24
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./database_backup.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - asabri-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./asabri-frontend
+      dockerfile: Dockerfile
+    container_name: asabri-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./asabri-frontend:/app
+      - /app/node_modules
+    networks:
+      - asabri-network
+
+networks:
+  asabri-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

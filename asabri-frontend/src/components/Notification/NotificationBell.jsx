@@ -10,14 +10,98 @@ const NotificationBell = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+    const latestIdRef = useRef(0);
+
+    const audioCtxRef = useRef(null);
+
+    // Unlock AudioContext on first user interaction (browser autoplay policy)
+    useEffect(() => {
+        const unlock = () => {
+            if (!audioCtxRef.current) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtxRef.current = new AudioContext();
+                }
+            }
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
+        };
+
+        window.addEventListener('click', unlock, { once: false });
+        window.addEventListener('keydown', unlock, { once: false });
+
+        return () => {
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('keydown', unlock);
+        };
+    }, []);
+
+    const playNotificationSound = () => {
+        try {
+            const ctx = audioCtxRef.current;
+            if (!ctx) return;
+            if (ctx.state === 'suspended') ctx.resume();
+
+            const now = ctx.currentTime;
+
+            // First tone
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(880, now);
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+
+            // Second tone (slightly higher, delayed)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1100, now + 0.15);
+            gain2.gain.setValueAtTime(0.25, now + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            osc2.start(now + 0.15);
+            osc2.stop(now + 0.5);
+        } catch (e) {
+            // Silently fail if audio is not supported
+        }
+    };
+
+    const processNotifications = (data) => {
+        // Ensure data is sorted by ID descending (newest first)
+        const sortedData = [...data].sort((a, b) => b.id - a.id);
+
+        if (sortedData.length > 0) {
+            const currentLatestId = sortedData[0].id;
+
+            // If we have a new ID that is greater than what we've seen
+            if (currentLatestId > latestIdRef.current) {
+                // If it's not the very first fetch (we don't want to alert on initial load)
+                if (latestIdRef.current > 0) {
+                    window.dispatchEvent(new CustomEvent('new-notification', { detail: sortedData[0] }));
+                    playNotificationSound();
+                }
+                latestIdRef.current = currentLatestId;
+            }
+        }
+
+        return sortedData;
+    };
 
     const fetchNotifications = async () => {
         try {
             const response = await api.get('/notifications');
-            setNotifications(response.data);
+            const sorted = processNotifications(response.data);
+            setNotifications(sorted);
 
             // Calculate unread from list or fetch separate count
-            const unread = response.data.filter(n => !n.is_read).length;
+            const unread = sorted.filter(n => !n.is_read).length;
             setUnreadCount(unread);
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -35,29 +119,19 @@ const NotificationBell = () => {
 
     useEffect(() => {
         fetchNotifications();
+        fetchUnreadCount();
 
         // Poll every 5 seconds for near real-time updates
         const interval = setInterval(async () => {
             try {
+                // Fetch notifications list (for dropdown display)
                 const response = await api.get('/notifications');
-                const latestData = response.data;
-                const newUnreadCount = latestData.filter(n => !n.is_read).length;
+                const sorted = processNotifications(response.data);
+                setNotifications(sorted);
 
-                setNotifications(prev => {
-                    if (prev.length > 0 && latestData.length > 0) {
-                        const lastId = prev[0].id;
-                        const latestId = latestData[0].id;
-
-                        if (latestId !== lastId) {
-                            window.dispatchEvent(new CustomEvent('new-notification', { detail: latestData[0] }));
-                        }
-                    } else if (prev.length === 0 && latestData.length > 0) {
-                        window.dispatchEvent(new CustomEvent('new-notification', { detail: latestData[0] }));
-                    }
-                    return latestData;
-                });
-
-                setUnreadCount(newUnreadCount);
+                // Fetch true unread count from dedicated endpoint (not capped by list limit)
+                const countResponse = await api.get('/notifications/unread-count');
+                setUnreadCount(countResponse.data.count);
             } catch (error) {
                 console.error('Error polling notifications:', error);
             }

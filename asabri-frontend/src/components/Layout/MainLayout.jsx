@@ -1,24 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Calendar, User as UserIcon, Menu, X } from 'lucide-react';
+import { Calendar, User as UserIcon, Menu, X, BookOpen } from 'lucide-react';
 import Sidebar from './Sidebar';
 import NotificationBell from '../Notification/NotificationBell';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
 import './MainLayout.css';
+import { useNavigate } from 'react-router-dom';
 
 const MainLayout = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { addToast } = useToast();
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDate(new Date());
         }, 1000);
 
-        return () => clearInterval(timer);
-    }, []);
+        const handleNewNotification = (event) => {
+            const notification = event.detail;
+            if (notification) {
+                addToast(notification.message, 'info', notification.title);
+            }
+        };
+
+        window.addEventListener('new-notification', handleNewNotification);
+
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('new-notification', handleNewNotification);
+        };
+    }, [addToast]);
 
     // Close sidebar when route changes on mobile
     useEffect(() => {
@@ -31,11 +46,11 @@ const MainLayout = () => {
         if (path.includes('/surat-keluar')) return 'SURAT KELUAR';
         if (path.includes('/users')) return 'MANAJEMEN USER';
         if (path.includes('/laporan')) return 'LAPORAN';
-        return 'SISTEM SURATIN';
+        return 'BUKU PANDUAN E-DHARMA';
     };
 
     const getPageSubtitle = (path) => {
-        if (path.includes('/dashboard')) return 'Selamat datang kembali di ASABRI SWALAPATRA';
+        if (path.includes('/dashboard')) return 'Selamat datang kembali di E-Dharma ASABRI';
         if (path.includes('/surat-masuk')) return 'Kelola surat masuk';
         if (path.includes('/surat-keluar')) return 'Kelola surat keluar';
         if (path.includes('/users')) return 'Kelola pengguna sistem';
@@ -45,8 +60,6 @@ const MainLayout = () => {
 
     const title = getPageTitle(location.pathname);
     const subtitle = getPageSubtitle(location.pathname);
-
-    const { addToast } = useToast();
 
     const userString = localStorage.getItem('user');
     let user = {};
@@ -79,6 +92,15 @@ const MainLayout = () => {
                     </div>
 
                     <div className="header-right">
+                        <button
+                            className="buku-panduan-btn"
+                            onClick={() => navigate('/panduan')}
+                            title="Buku Panduan"
+                        >
+                            <BookOpen size={20} />
+                            <span className="buku-panduan-text">Buku Panduan</span>
+                        </button>
+
                         <div className="date-pill">
                             <Calendar size={16} />
                             <span>

@@ -127,24 +127,31 @@ const Laporan = () => {
         }
 
         if (filters.periodeType === 'Harian') {
-            const today = new Date().toISOString().split('T')[0];
-            res = res.filter(item => item.tanggal && item.tanggal.startsWith(today));
+            const selectedDate = filters.tanggal;
+            if (selectedDate) {
+                res = res.filter(item => item.tanggal && item.tanggal.startsWith(selectedDate));
+            }
         } else if (filters.periodeType === 'Bulanan') {
             // Use selected month and year
             res = res.filter(item => {
                 if (!item.tanggal) return false;
-                const d = new Date(item.tanggal);
+                // Parse YYYY-MM explicitly from substring to avoid timezone issues
+                // Assuming format YYYY-MM-DD
+                const itemYear = parseInt(item.tanggal.substring(0, 4));
+                const itemMonth = parseInt(item.tanggal.substring(5, 7));
+
                 const filterBulan = filters.bulan ? parseInt(filters.bulan) : (new Date().getMonth() + 1);
                 const filterTahun = filters.tahun ? parseInt(filters.tahun) : new Date().getFullYear();
-                return (d.getMonth() + 1) === filterBulan && d.getFullYear() === filterTahun;
+
+                return itemMonth === filterBulan && itemYear === filterTahun;
             });
         } else if (filters.periodeType === 'Tahunan') {
             // Use selected year
             res = res.filter(item => {
                 if (!item.tanggal) return false;
-                const d = new Date(item.tanggal);
+                const itemYear = parseInt(item.tanggal.substring(0, 4));
                 const filterTahun = filters.tahun ? parseInt(filters.tahun) : new Date().getFullYear();
-                return d.getFullYear() === filterTahun;
+                return itemYear === filterTahun;
             });
         }
 
@@ -168,7 +175,7 @@ const Laporan = () => {
     };
 
     const exportToExcel = () => {
-        if (allData.length === 0) {
+        if (filteredData.length === 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Data Kosong',
@@ -179,14 +186,13 @@ const Laporan = () => {
         }
 
         const wb = XLSX.utils.book_new();
-        const STORAGE_URL = 'http://localhost:8000/storage/';
+        const STORAGE_URL = `${window.location.origin}/storage/`;
 
         // Helper to format data
         // Helper to format data for Surat Masuk
         const formatMasukForSheet = (data) => {
             return data.map((item, index) => ({
                 'No': index + 1,
-                'Dibuat Oleh': item.dibuat_oleh || '-',
                 'No. Surat': item.no_surat,
                 'Pengirim': item.pengirim,
                 'Tanggal Terima Surat': formatDate(item.tanggal_terima_surat),
@@ -236,7 +242,7 @@ const Laporan = () => {
             }
         };
 
-        const masukData = allData.filter(i => i.tipe === 'Surat Masuk').sort((a, b) => a.raw_id - b.raw_id);
+        const masukData = filteredData.filter(i => i.tipe === 'Surat Masuk').sort((a, b) => a.raw_id - b.raw_id);
         if (masukData.length > 0) {
             const masukFormatted = formatMasukForSheet(masukData);
             const wsMasuk = XLSX.utils.json_to_sheet(masukFormatted);
@@ -248,7 +254,7 @@ const Laporan = () => {
             XLSX.utils.book_append_sheet(wb, wsMasuk, "Surat Masuk");
         }
 
-        const keluarData = allData.filter(i => i.tipe === 'Surat Keluar').sort((a, b) => a.raw_id - b.raw_id);
+        const keluarData = filteredData.filter(i => i.tipe === 'Surat Keluar').sort((a, b) => a.raw_id - b.raw_id);
         if (keluarData.length > 0) {
             const keluarFormatted = formatKeluarForSheet(keluarData);
             const wsKeluar = XLSX.utils.json_to_sheet(keluarFormatted);

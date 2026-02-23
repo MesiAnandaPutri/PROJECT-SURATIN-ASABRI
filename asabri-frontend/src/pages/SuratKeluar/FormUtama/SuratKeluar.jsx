@@ -43,6 +43,7 @@ const SuratKeluar = () => {
 
     const [showResi, setShowResi] = useState(false);
     const [selectedSuratResi, setSelectedSuratResi] = useState(null);
+    const [resiFilter, setResiFilter] = useState(''); // '' | 'ada' | 'tidak'
 
     const { addToast } = useToast();
 
@@ -127,7 +128,13 @@ const SuratKeluar = () => {
             ? (item.status || '').toLowerCase() === statusFilter.toLowerCase()
             : true;
 
-        return matchesSearch && matchesDateRange && matchesKlasifikasi && matchesTingkat && matchesStatus;
+        const matchesResi = resiFilter === 'ada'
+            ? !!(item.no_resi && item.no_resi.trim() !== '')
+            : resiFilter === 'tidak'
+                ? (!item.no_resi || item.no_resi.trim() === '')
+                : true;
+
+        return matchesSearch && matchesDateRange && matchesKlasifikasi && matchesTingkat && matchesStatus && matchesResi;
     }).sort((a, b) => b.id - a.id);
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);

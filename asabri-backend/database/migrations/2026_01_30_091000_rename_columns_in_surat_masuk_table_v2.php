@@ -13,8 +13,12 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('surat_masuk', function (Blueprint $table) {
-            $table->renameColumn('asal_surat', 'pengirim');
-            $table->renameColumn('tanggal_surat', 'tanggal_terima_surat');
+            if (Schema::hasColumn('surat_masuk', 'asal_surat')) {
+                $table->renameColumn('asal_surat', 'pengirim');
+            }
+            if (Schema::hasColumn('surat_masuk', 'tanggal_surat')) {
+                $table->renameColumn('tanggal_surat', 'tanggal_terima_surat');
+            }
         });
     }
 

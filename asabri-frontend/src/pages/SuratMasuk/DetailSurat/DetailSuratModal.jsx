@@ -9,6 +9,8 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
 
     if (!isOpen || !surat) return null;
 
+    const hasMultipleDisposisi = Array.isArray(surat.disposisi) && surat.disposisi.length > 1;
+
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const options = { day: '2-digit', month: 'long', year: 'numeric' };
@@ -36,23 +38,11 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Download failed:', error);
-            let errorMessage = 'Gagal mengunduh lembar disposisi.';
-
-            if (error.response && error.response.data instanceof Blob) {
-                try {
-                    const text = await error.response.data.text();
-                    const json = JSON.parse(text);
-                    errorMessage = json.message || json.error || errorMessage;
-                } catch (e) {
-                }
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
 
             Swal.fire({
                 icon: 'error',
                 title: 'Download Gagal',
-                text: errorMessage,
+                text: 'Surat ini belum didisposisi.',
                 confirmButtonColor: '#002966'
             });
         } finally {
@@ -85,7 +75,9 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
         }
     };
 
-    const hasMultipleDisposisi = surat.disposisi && surat.disposisi.length > 1;
+    const handlePrint = () => {
+        window.print();
+    };
 
     return (
         <div className="modal-overlay">
@@ -153,9 +145,9 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                                 <div className="riwayat-header">
                                     <h4>Riwayat Disposisi</h4>
                                 </div>
-                                <div className="riwayat-list">
-                                    {surat.disposisi && surat.disposisi.length > 0 ? (
-                                        surat.disposisi.map((disp, index) => (
+                                {surat.disposisi && surat.disposisi.length > 0 ? (
+                                    <div className="riwayat-list">
+                                        {surat.disposisi.map((disp, index) => (
                                             <div className="riwayat-item" key={disp.id || index}>
                                                 <div className="riwayat-dot"></div>
                                                 <div className="riwayat-content">
@@ -218,13 +210,13 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                                                     )}
                                                 </div>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="empty-riwayat">
-                                            <p className="text-muted text-sm italic">Belum ada riwayat disposisi.</p>
-                                        </div>
-                                    )}
-                                </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-riwayat">
+                                        <p className="text-muted text-sm italic">Belum ada riwayat disposisi.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -233,7 +225,7 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                                 <h3>Preview Dokumen</h3>
                                 {surat.file_path && (
                                     <a
-                                        href={`http://localhost:8000/storage/${surat.file_path}`}
+                                        href={`/storage/${surat.file_path}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn-expand"
@@ -265,7 +257,7 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                 <div className="modal-footer centered-footer">
                     {surat.file_path ? (
                         <a
-                            href={`http://localhost:8000/storage/${surat.file_path}`}
+                            href={`/storage/${surat.file_path}`}
                             download
                             className="btn-action btn-download"
                             style={{ textDecoration: 'none' }}
@@ -281,11 +273,7 @@ const DetailSuratModal = ({ isOpen, onClose, surat }) => {
                     )}
                     <button className="btn-action btn-print" onClick={handleDownloadDisposisi} disabled={downloading}>
                         <FileText size={16} />
-                        {downloading ? 'Mengunduh...' : 'Lembar Disposisi'}
-                    </button>
-                    <button className="btn-action btn-print">
-                        <Printer size={16} />
-                        Cetak
+                        {downloading ? 'Mengunduh...' : 'Print Disposisi'}
                     </button>
                 </div>
             </div>

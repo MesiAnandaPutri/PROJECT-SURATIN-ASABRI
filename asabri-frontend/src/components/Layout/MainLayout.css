@@ -43,9 +43,15 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
-    color: var(--color-primary);
-    margin-right: 10px;
+    padding: 6px;
+    color: #ffffff;
+    margin-right: 6px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .header-title {
@@ -84,6 +90,30 @@
     font-weight: 600;
     color: var(--color-primary);
     border: 1px solid #e2e8f0;
+}
+
+.buku-panduan-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ffffff;
+    color: rgb(2, 34, 165);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.buku-panduan-btn:hover {
+    background-color: #b39200;
+}
+
+.buku-panduan-text {
+    display: inline;
 }
 
 .user-profile-section {

@@ -84,7 +84,7 @@
         }
 
         .signature-name {
-            margin-top: 50px;
+            margin-top: 5px;
             font-weight: bold;
             text-decoration: underline;
         }
@@ -199,7 +199,7 @@
             @else
                 <br><br><br>
             @endif
-            <div class="signature-name" style="margin-top: 5px;">
+            <div class="signature-name" style="margin-top: -20px;">
                 {{ $pimpinan_name ?? 'SALIM ACHMAD' }}
             </div>
         </div>

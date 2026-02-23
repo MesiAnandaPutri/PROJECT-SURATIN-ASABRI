@@ -226,6 +226,19 @@
     flex: 1;
 }
 
+.empty-riwayat {
+    padding: 12px 0;
+    margin-left: 20px;
+    border: none !important;
+    position: relative;
+}
+
+.empty-riwayat::before {
+    display: none !important;
+    content: none !important;
+    width: 0 !important;
+}
+
 .riwayat-date {
     font-size: 11px;
     color: #94A3B8;
@@ -359,4 +372,99 @@
 
 .btn-print:hover {
     background-color: #F8FAFC;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media screen and (max-width: 768px) {
+    .detail-modal-container {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .detail-content-grid {
+        flex-direction: column;
+    }
+
+    .detail-left {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 16px;
+    }
+
+    .detail-right {
+        width: 100%;
+        padding: 16px;
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .btn-action {
+        flex: 1;
+        min-width: calc(50% - 8px);
+        justify-content: center;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
+@media print {
+    body>* {
+        display: none !important;
+    }
+
+    .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 9999;
+        display: block !important;
+    }
+
+    .detail-modal-container {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        box-shadow: none;
+        border: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block !important;
+    }
+
+    .detail-modal-body {
+        overflow: visible;
+    }
+
+    .detail-content-grid {
+        display: block;
+    }
+
+    .detail-left {
+        width: 100%;
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    .detail-right,
+    .btn-close,
+    .modal-footer {
+        display: none !important;
+    }
+
+    /* Ensure specific elements are visible */
+    .detail-left * {
+        visibility: visible;
+    }
 }

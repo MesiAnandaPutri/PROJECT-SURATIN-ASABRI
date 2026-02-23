@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import api from '../../services/api';
 import LogoAsabri2 from '../image/LogoAsabri2.png';
+import EdharmaAsabri from '../image/EdharmaAsabri.png';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 
@@ -74,7 +75,10 @@ const Login = () => {
                     <div className="login-header">
                         <div className="logo-container">
                             <img src={LogoAsabri2} alt="ASABRI Logo" className="main-logo" />
-                            <h2 className="logo-text">Asabri Swalapatra</h2>
+                            <img src={EdharmaAsabri} alt="Asabri Swalapatra" className="edharma-logo" />
+                            <p className="edharma-tagline">
+                                Digitalisasi Handling Administrasi &amp; Registrasi Manajemen Arsip
+                            </p>
                         </div>
 
                     </div>
@@ -112,10 +116,6 @@ const Login = () => {
                                 }}
                             />
                             {errors.password && <span className="error-text">{errors.password}</span>}
-                        </div>
-
-                        <div className="form-links">
-                            <a href="/forgot-password" className="forgot-password">Lupa Password?</a>
                         </div>
 
                         <button type="submit" className="login-btn" disabled={loading}>

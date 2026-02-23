@@ -84,6 +84,10 @@ const SuratMasuk = () => {
         }
     };
 
+    useEffect(() => {
+        setStatusFilter(searchParams.get('status') || '');
+    }, [searchParams]);
+
     const filteredData = suratData.filter(item => {
         const matchesSearch = (
             (item.perihal || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,8 +113,9 @@ const SuratMasuk = () => {
             }
         }
 
+        const itemStatus = item.status || 'Proses';
         const matchesStatus = statusFilter
-            ? (item.status || '').toLowerCase() === statusFilter.toLowerCase()
+            ? itemStatus.toLowerCase() === statusFilter.toLowerCase()
             : true;
 
         return matchesSearch && matchesDateRange && matchesStatus;
@@ -186,8 +191,15 @@ const SuratMasuk = () => {
         }
     };
 
-    const handleOpenDetail = (item) => {
-        setSelectedSuratDetail(item);
+    const handleOpenDetail = async (item) => {
+        try {
+            // Fetch fresh data including disposisi relationship
+            const res = await api.get(`/surat-masuk/${item.id}`);
+            setSelectedSuratDetail(res.data);
+        } catch (error) {
+            // Fallback to list data if fetch fails
+            setSelectedSuratDetail(item);
+        }
         setShowDetail(true);
     };
 

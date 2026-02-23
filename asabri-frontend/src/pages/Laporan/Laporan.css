@@ -437,3 +437,68 @@
         transform: translateY(0);
     }
 }
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .tabs-container {
+        overflow-x: auto;
+        padding-bottom: 4px;
+        gap: 8px;
+    }
+
+    .tab-btn {
+        padding: 0.6rem 1.2rem;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    .card-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-gold {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .report-stats-card {
+        padding: 1rem;
+    }
+
+    .stats-value {
+        font-size: 1.5rem;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}

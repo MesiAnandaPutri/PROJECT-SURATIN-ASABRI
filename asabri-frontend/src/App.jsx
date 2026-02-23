@@ -13,6 +13,7 @@ import Laporan from './pages/Laporan/Laporan';
 import ManageUser from './pages/ManageUser/ManageUser';
 import TambahUser from './pages/ManageUser/TambahUser/TambahUser';
 import EditUser from './pages/ManageUser/EditUser/EditUser';
+import BukuPanduan from './pages/BukuPanduan/BukuPanduan';
 import './App.css';
 
 import { ToastProvider } from './context/ToastContext';
@@ -36,6 +37,7 @@ function App() {
             <Route path="/users" element={<ManageUser />} />
             <Route path="/users/tambah" element={<TambahUser />} />
             <Route path="/users/edit/:id" element={<EditUser />} />
+            <Route path="/panduan" element={<BukuPanduan />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Route>
         </Routes>
