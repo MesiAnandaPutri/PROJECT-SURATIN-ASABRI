@@ -23,7 +23,7 @@ const MainLayout = () => {
         const handleNewNotification = (event) => {
             const notification = event.detail;
             if (notification) {
-                addToast(notification.message, 'info', notification.title);
+                addToast(notification.message, 'info', notification.title, { id: notification.id });
             }
         };
 

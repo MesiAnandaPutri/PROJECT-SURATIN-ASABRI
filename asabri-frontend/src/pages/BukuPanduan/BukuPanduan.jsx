@@ -11,7 +11,8 @@ import {
     Edit,
     Trash2,
     Truck,
-    FileText
+    FileText,
+    Download
 } from 'lucide-react';
 import './BukuPanduan.css';
 
@@ -28,6 +29,7 @@ import imgTambahSuratKeluar from '../../assets/images/panduan/tambah-surat-kelua
 import imgLaporan from '../../assets/images/panduan/laporan.png';
 import imgTambahUser from '../../assets/images/panduan/tambah-pengguna.png';
 import imgEditUser from '../../assets/images/panduan/edit-pengguna.png';
+import imgImport from '../../assets/images/panduan/import.png';
 
 const BukuPanduan = () => {
     // Current slide index
@@ -158,6 +160,8 @@ const BukuPanduan = () => {
 
                 <h3>Tombol Aksi:</h3>
                 <ul className="panduan-list">
+                    <li><strong style={{ color: '#CCA600' }}><Download size={16} style={{ verticalAlign: 'middle' }} /> Download Dokumen:</strong> Mengunduh file surat atau dokumen yang telah diunggah sebelumnya.</li>
+
                     <li><strong style={{ color: '#0ea5e9' }}><Printer size={16} style={{ verticalAlign: 'middle' }} /> Print Disposisi:</strong> Mencetak lembar disposisi untuk keperluan arsip fisik atau tanda tangan basah.</li>
                 </ul>
             </div>
@@ -193,6 +197,35 @@ const BukuPanduan = () => {
         </>
     );
 
+    // 5A. IMPORT DATA (NEW)
+    const SlideImport = () => (
+        <>
+            <div className="panduan-header">
+                <h1 className="panduan-title">Import Data</h1>
+            </div>
+            <div className="panduan-section">
+                <PandaunImage
+                    src={imgImport}
+                    alt="Fitur Import Data"
+                    caption="Tampilan Modal Import Data"
+                />
+                <h3>Langkah-langkah Import:</h3>
+                <ul className="panduan-steps">
+                    <li>Klik tombol <strong>Import</strong> pada halaman Daftar Surat Masuk atau Surat Keluar.</li>
+                    <li>Download template yang disediakanoleh sistem jika belum memiliki format yang sesuai.</li>
+                    <li>Pilih file (.csv atau .xlsx) yang ingin diunggah.</li>
+                    <li>Klik tombol <strong>Import</strong> untuk memproses data.</li>
+                    <li>Sistem akan menampilkan hasil import berupa jumlah data berhasil dan daftar error jika ada.</li>
+                </ul>
+                <div className="panduan-note">
+                    <Lightbulb size={18} style={{ marginRight: '8px', verticalAlign: 'text-bottom' }} />
+                    <strong>Note:</strong> Sistem telah menyediakan template khusus untuk proses import, sehingga pengguna perlu menyesuaikan data dengan format
+                    dan struktur kolom yang tersedia agar proses import berjalan dengan lancar
+                </div>
+            </div>
+        </>
+    );
+
     // 6. DISPOSISI SURAT
     const SlideDisposisi = () => (
         <>
@@ -207,12 +240,12 @@ const BukuPanduan = () => {
                 />
 
                 <h3>Langkah Melakukan Disposisi:</h3>
-                <ol className="panduan-steps">
+                <ul className="panduan-steps">
                     <li>Klik tombol <strong>Disposisi</strong> pada surat yang ingin diteruskan.</li>
                     <li><strong>Pilih Penerima:</strong> Centang nama-nama pegawai yang akan menerima.</li>
                     <li><strong>Pilih Instruksi:</strong> Pilih perintah dari dropdown.</li>
                     <li>Klik <strong>Kirim Disposisi</strong>.</li>
-                </ol>
+                </ul>
 
                 <div className="panduan-note">
                     <strong>Akses:</strong> Fitur Disposisi hanya tersedia untuk <strong>Pimpinan</strong>.
@@ -313,6 +346,10 @@ const BukuPanduan = () => {
                 </ul>
 
                 <h3>Tombol Aksi:</h3>
+                <ul className="panduan-list">
+                    <li><strong style={{ color: '#CCA600' }}><Download size={16} style={{ verticalAlign: 'middle' }} /> Download Dokumen:</strong> Mengunduh file surat atau dokumen yang telah diunggah sebelumnya.</li>
+                </ul>
+
             </div>
         </>
     );
@@ -330,7 +367,7 @@ const BukuPanduan = () => {
                     caption="Form Input Resi pada Surat Keluar"
                 />
                 <h3>Cara Menginput Resi:</h3>
-                <ol className="panduan-steps">
+                <ul className="panduan-steps">
                     <li>Klik tombol <strong>Input Resi</strong> (Ikon Paket/Truck) pada surat keluar di tabel.</li>
                     <li>
                         <strong>Pilihan A: Ada Resi</strong>
@@ -341,7 +378,7 @@ const BukuPanduan = () => {
                         <br /> Pilih opsi ini jika surat tidak ada no resi. Status &rarr; <strong>SELESAI</strong>.
                     </li>
                     <li>Klik <strong>Simpan</strong>.</li>
-                </ol>
+                </ul>
                 <div className="panduan-note">
                     <strong>Akses:</strong> Input Resi pengiriman hanya dapat dilakukan oleh <strong>Admin</strong> dan <strong>Staff</strong>.
                 </div>
@@ -367,7 +404,7 @@ const BukuPanduan = () => {
                     <li>Jenis surat dapat difilter menjadi <strong>Surat Masuk</strong> atau <strong>Surat Keluar</strong>.</li>
                     <li>Status surat dapat difilter berdasarkan <strong>Disposisi</strong>, <strong>Proses</strong>, <strong>Draft</strong>, <strong>Terkirim</strong>, dan <strong>Selesai</strong>.</li>
                     <li>Tersedia tombol <strong>Export to Excel (.xlsx)</strong> untuk mengunduh data laporan.</li>
-                    <li>Bagian <strong>Data Laporan</strong> menampilkan detail surat seperti Nomor Surat, Tanggal, Jenis, Dari/Kepada, Perihal, Kategori, dan Status.</li>
+                    <li>Bagian <strong>Data Laporan</strong> menampilkan detail surat seperti Nomor Surat, Tanggal, Jenis, Dari/Kepada, Perihal, dan Status.</li>
                 </ul>
             </div>
         </>
@@ -492,6 +529,7 @@ const BukuPanduan = () => {
         { id: 'surat-masuk-list', component: <SlideSuratMasukList /> },
         { id: 'surat-masuk-detail', component: <SlideDetailSuratMasuk /> },
         { id: 'surat-masuk-add', component: <SlideSuratMasukAdd /> },
+        { id: 'import-data', component: <SlideImport /> },
         { id: 'surat-keluar-list', component: <SlideSuratKeluarList /> },
         { id: 'surat-keluar-add', component: <SlideSuratKeluarAdd /> },
         { id: 'surat-keluar-detail', component: <SlideDetailSuratKeluar /> },

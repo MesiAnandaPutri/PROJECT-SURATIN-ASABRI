@@ -15,18 +15,26 @@ const NotificationBell = () => {
     const audioCtxRef = useRef(null);
 
     // Unlock AudioContext on first user interaction (browser autoplay policy)
+    // Initialize and Unlock AudioContext
     useEffect(() => {
-        const unlock = () => {
+        const initAudio = () => {
             if (!audioCtxRef.current) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (AudioContext) {
                     audioCtxRef.current = new AudioContext();
                 }
             }
+        };
+
+        const unlock = () => {
+            initAudio();
             if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
                 audioCtxRef.current.resume();
             }
         };
+
+        // Try to initialize immediately (might be suspended)
+        initAudio();
 
         window.addEventListener('click', unlock, { once: false });
         window.addEventListener('keydown', unlock, { once: false });
@@ -39,6 +47,14 @@ const NotificationBell = () => {
 
     const playNotificationSound = () => {
         try {
+            // Ensure context exists
+            if (!audioCtxRef.current) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtxRef.current = new AudioContext();
+                }
+            }
+
             const ctx = audioCtxRef.current;
             if (!ctx) return;
             if (ctx.state === 'suspended') ctx.resume();
@@ -80,13 +96,40 @@ const NotificationBell = () => {
         if (sortedData.length > 0) {
             const currentLatestId = sortedData[0].id;
 
-            // If we have a new ID that is greater than what we've seen
-            if (currentLatestId > latestIdRef.current) {
-                // If it's not the very first fetch (we don't want to alert on initial load)
-                if (latestIdRef.current > 0) {
-                    window.dispatchEvent(new CustomEvent('new-notification', { detail: sortedData[0] }));
+            // Handle initial load (login)
+            if (latestIdRef.current === 0) {
+                const unreadItems = sortedData.filter(n => !n.is_read);
+                if (unreadItems.length > 0) {
+                    // Play sound once for all unread
                     playNotificationSound();
+
+                    // Show up to 3 most recent unread as individual toasts
+                    // Reverse so they appear in chronological order (oldest of the 3 first)
+                    const toShow = unreadItems.slice(0, 3).reverse();
+                    toShow.forEach(item => {
+                        window.dispatchEvent(new CustomEvent('new-notification', { detail: item }));
+                    });
+
+                    // If there are more than 3, show a summary
+                    if (unreadItems.length > 3) {
+                        setTimeout(() => {
+                            window.dispatchEvent(new CustomEvent('new-notification', {
+                                detail: {
+                                    id: `summary-${Date.now()}`,
+                                    title: 'Notifikasi Lainnya',
+                                    message: `Anda memiliki ${unreadItems.length - 3} notifikasi lain yang belum dibaca.`
+                                }
+                            }));
+                        }, 500); // Small delay after individual toasts
+                    }
                 }
+                latestIdRef.current = currentLatestId;
+            }
+            // Handle new notifications during polling
+            else if (currentLatestId > latestIdRef.current) {
+                // Current behavior: show only the very latest one
+                window.dispatchEvent(new CustomEvent('new-notification', { detail: sortedData[0] }));
+                playNotificationSound();
                 latestIdRef.current = currentLatestId;
             }
         }

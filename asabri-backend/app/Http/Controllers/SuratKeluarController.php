@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SuratKeluar;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,13 @@ class SuratKeluarController extends Controller
             'kirim_sebagai' => 'required',
             'tanggal_pembuatan' => 'required|date',
             'kategori_berkas' => 'required|in:nota dinas,surat perintah,surat edaran,peraturan,keputusan',
-            'no_surat' => 'required|unique:surat_keluar',
+            'no_surat' => [
+                'required',
+                Rule::unique('surat_keluar')->where(
+                    fn($query) =>
+                    $query->whereYear('tanggal_pembuatan', date('Y', strtotime($request->tanggal_pembuatan)))
+                )
+            ],
             'status' => 'required|in:draft,proses,terkirim',
             'perihal' => 'required',
             'tingkat_urgensi_penyelesaian' => 'required|in:rendah,sedang,tinggi,mendesak',

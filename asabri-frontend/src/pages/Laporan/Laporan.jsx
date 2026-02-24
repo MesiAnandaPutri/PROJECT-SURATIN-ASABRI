@@ -211,7 +211,6 @@ const Laporan = () => {
                 'Dibuat Oleh': item.dibuat_oleh || '-',
                 'No. Surat': item.no_surat,
                 'Tanggal Pembuatan': formatDate(item.tanggal_pembuatan),
-                'Kategori Berkas': item.kategori_berkas,
                 'Tujuan': item.tujuan,
                 'No. Resi': item.no_resi,
                 'Status': item.status,
@@ -415,7 +414,6 @@ const Laporan = () => {
                                 <th>Jenis</th>
                                 <th>Dari/Kepada</th>
                                 <th>Perihal</th>
-                                <th>Kategori</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -435,7 +433,6 @@ const Laporan = () => {
                                         </td>
                                         <td>{item.dari_kepada}</td>
                                         <td>{item.perihal}</td>
-                                        <td>{item.kategori}</td>
                                         <td>
                                             <span className={`status-badge status-${item.status.toLowerCase()}`}>
                                                 {item.status}

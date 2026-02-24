@@ -10,6 +10,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ApiController extends Controller
 {
@@ -318,7 +319,14 @@ class ApiController extends Controller
                 'tujuan' => 'required|string',
                 'tanggal_pembuatan' => 'required|date',
                 'kategori_berkas' => 'required|string',
-                'no_surat' => 'required|string|unique:surat_keluar,no_surat',
+                'no_surat' => [
+                    'required',
+                    'string',
+                    Rule::unique('surat_keluar')->where(
+                        fn($query) =>
+                        $query->whereYear('tanggal_pembuatan', date('Y', strtotime($request->tanggal_pembuatan)))
+                    )
+                ],
                 'status' => 'nullable|string',
                 'perihal' => 'required|string',
                 'tingkat_urgensi_penyelesaian' => 'nullable|string',
@@ -370,7 +378,16 @@ class ApiController extends Controller
                 'tujuan' => 'nullable|string',
                 'tanggal_pembuatan' => 'nullable|date',
                 'kategori_berkas' => 'nullable|string',
-                'no_surat' => 'nullable|string|unique:surat_keluar,no_surat,' . $id,
+                'no_surat' => [
+                    'nullable',
+                    'string',
+                    Rule::unique('surat_keluar')
+                        ->ignore($id)
+                        ->where(
+                            fn($query) =>
+                            $query->whereYear('tanggal_pembuatan', date('Y', strtotime($request->tanggal_pembuatan ?? $surat->tanggal_pembuatan)))
+                        )
+                ],
                 'status' => 'nullable|string',
                 'perihal' => 'nullable|string',
                 'tingkat_urgensi_penyelesaian' => 'nullable|string',
@@ -746,8 +763,15 @@ class ApiController extends Controller
                 $rowNumber = $index + 2; // +2 because we removed header and arrays are 0-indexed
 
                 try {
-                    // Skip empty rows
-                    if (empty(array_filter($row))) {
+                    // Skip empty rows (only if truly empty: all null or empty strings)
+                    $isTrulyEmpty = true;
+                    foreach ($row as $cellValue) {
+                        if (!is_null($cellValue) && (string) $cellValue !== '') {
+                            $isTrulyEmpty = false;
+                            break;
+                        }
+                    }
+                    if ($isTrulyEmpty) {
                         continue;
                     }
 
@@ -760,25 +784,24 @@ class ApiController extends Controller
                         return '';
                     };
 
-                    // Map columns to database fields using header names
+                    // Map columns to database fields using header names and TRIM values
                     $data = [
-                        'pengirim' => $getValue('pengirim'),
-                        'no_surat' => $getValue('no_surat'),
+                        'pengirim' => trim($getValue('pengirim')),
+                        'no_surat' => trim($getValue('no_surat')),
                         'tanggal_terima_surat' => $this->convertExcelDate($getValue('tanggal_terima_surat')),
                         'tanggal_surat_masuk' => $this->convertExcelDate($getValue('tanggal_surat_masuk')),
                         'sumber_berkas' => $this->validateEnum($getValue('sumber_berkas'), [
                             'internal',
                             'eksternal'
-                        ], 'eksternal'), // Default to 'eksternal' if missing
-                        'perihal' => $getValue('perihal') ?: null,
-                        'keterangan' => $getValue('keterangan'),
+                        ], 'eksternal'),
+                        'perihal' => trim($getValue('perihal')) ?: null,
+                        'keterangan' => trim($getValue('keterangan')),
                         'status' => 'proses',
                         'user_id' => Auth::id(),
                         'created_by_name' => Auth::user()->nama_lengkap ?? null,
                     ];
 
                     $data['pengirim'] = $data['pengirim'] ?: null;
-                    // $data['perihal'] = $data['perihal'] ?: null; // Already handled above
 
                     // Validate required fields
                     $missingFields = [];
@@ -792,20 +815,24 @@ class ApiController extends Controller
                         $missingFields[] = 'Pengirim';
                     if (empty($data['perihal']))
                         $missingFields[] = 'Perihal';
-                    // sumber_berkas defaults to null if invalid, so check if it's null (it should be required)
                     if (empty($data['sumber_berkas']))
                         $missingFields[] = 'Sumber Berkas';
 
                     if (!empty($missingFields)) {
-                        $errors[] = "Baris {$rowNumber}: Kolom wajib diisi: " . implode(', ', $missingFields);
+                        $errors[] = "Baris {$rowNumber}: Kolom wajib diisi atau format tidak valid: " . implode(', ', $missingFields);
                         continue;
                     }
 
-                    // Check if no_surat already exists - ALLOWED NOW
-                    // if (SuratMasuk::where('no_surat', $data['no_surat'])->exists()) {
-                    //    $errors[] = "Baris {$rowNumber}: No. Surat '{$data['no_surat']}' sudah ada";
-                    //    continue;
-                    // }
+                    // Check if no_surat already exists in the same year (ONLY if not empty)
+                    $yearMasuk = $data['tanggal_terima_surat'] ? date('Y', strtotime($data['tanggal_terima_surat'])) : null;
+                    $existsMasuk = SuratMasuk::where('no_surat', $data['no_surat'])
+                        ->when($yearMasuk, fn($q) => $q->whereYear('tanggal_terima_surat', $yearMasuk))
+                        ->exists();
+
+                    if (!empty($data['no_surat']) && $existsMasuk) {
+                        $errors[] = "Baris {$rowNumber}: No. Surat '{$data['no_surat']}' sudah ada di tahun " . ($yearMasuk ?? 'terkait');
+                        continue;
+                    }
 
                     // Create surat masuk
                     $surat = SuratMasuk::create($data);
@@ -889,8 +916,15 @@ class ApiController extends Controller
                 $rowNumber = $index + 2; // +2 because we removed header and arrays are 0-indexed
 
                 try {
-                    // Skip empty rows
-                    if (empty(array_filter($row))) {
+                    // Skip empty rows (only if truly empty: all null or empty strings)
+                    $isTrulyEmpty = true;
+                    foreach ($row as $cellValue) {
+                        if (!is_null($cellValue) && (string) $cellValue !== '') {
+                            $isTrulyEmpty = false;
+                            break;
+                        }
+                    }
+                    if ($isTrulyEmpty) {
                         continue;
                     }
 
@@ -903,11 +937,11 @@ class ApiController extends Controller
                         return '';
                     };
 
-                    // Map columns to database fields using header names
+                    // Map columns to database fields using header names and TRIM values
                     $data = [
-                        'no_surat' => $getValue('no_surat'),
+                        'no_surat' => trim($getValue('no_surat')),
                         'tanggal_pembuatan' => $this->convertExcelDate($getValue('tanggal_pembuatan')),
-                        'tujuan' => $getValue('tujuan') ?: null,
+                        'tujuan' => trim($getValue('tujuan')) ?: null,
                         'kategori_berkas' => $this->validateEnum($getValue('kategori_berkas'), [
                             'berita acara',
                             'format',
@@ -937,7 +971,7 @@ class ApiController extends Controller
                             'terbatas',
                             'rahasia',
                             'sangat rahasia'
-                        ], null), // Default null as requested
+                        ], null),
                         'tingkat_urgensi_penyelesaian' => $this->validateEnum($getValue('tingkat_urgensi_penyelesaian'), [
                             'amat segera',
                             'biasa',
@@ -946,31 +980,40 @@ class ApiController extends Controller
                             'sedang',
                             'rendah'
                         ], null),
-                        'perihal' => $getValue('perihal') ?: null,
-                        'keterangan' => $getValue('keterangan'),
+                        'perihal' => trim($getValue('perihal')) ?: null,
+                        'keterangan' => trim($getValue('keterangan')),
                         'status' => $this->validateEnum($getValue('status'), ['terkirim', 'draft'], 'draft'),
-                        'no_resi' => $getValue('no_resi'),
+                        'no_resi' => trim($getValue('no_resi')),
                         'user_id' => Auth::id(),
-                        'created_by_name' => $getValue('created_by_name') ?: (Auth::user()->nama_lengkap ?? null),
+                        'created_by_name' => trim($getValue('created_by_name')) ?: (Auth::user()->nama_lengkap ?? null),
                     ];
 
-                    // $data['tujuan'] = $data['tujuan'] ?: null; // Handled above
-                    // $data['perihal'] = $data['perihal'] ?: null; // Handled above
-
-                    /* 
-                    // REMOVED: Required checks to allow empty values
+                    // Validate required fields
+                    $missingFields = [];
                     if (empty($data['no_surat']))
                         $missingFields[] = 'No. Surat';
-                    // ... other checks
+                    if (empty($data['tanggal_pembuatan']))
+                        $missingFields[] = 'Tanggal Pembuatan';
+                    if (empty($data['tujuan']))
+                        $missingFields[] = 'Tujuan';
+                    if (empty($data['perihal']))
+                        $missingFields[] = 'Perihal';
+                    if (empty($data['kategori_berkas']))
+                        $missingFields[] = 'Kategori Berkas';
+
                     if (!empty($missingFields)) {
-                        $errors[] = "Baris {$rowNumber}: Kolom wajib diisi: " . implode(', ', $missingFields);
+                        $errors[] = "Baris {$rowNumber}: Kolom wajib diisi atau format tidak valid: " . implode(', ', $missingFields);
                         continue;
                     }
-                    */
 
-                    // Check if no_surat already exists (ONLY if not empty)
-                    if (!empty($data['no_surat']) && SuratKeluar::where('no_surat', $data['no_surat'])->exists()) {
-                        $errors[] = "Baris {$rowNumber}: No. Surat '{$data['no_surat']}' sudah ada";
+                    // Check if no_surat already exists in the same year (ONLY if not empty)
+                    $year = $data['tanggal_pembuatan'] ? date('Y', strtotime($data['tanggal_pembuatan'])) : null;
+                    $exists = SuratKeluar::where('no_surat', $data['no_surat'])
+                        ->when($year, fn($q) => $q->whereYear('tanggal_pembuatan', $year))
+                        ->exists();
+
+                    if (!empty($data['no_surat']) && $exists) {
+                        $errors[] = "Baris {$rowNumber}: No. Surat '{$data['no_surat']}' sudah ada di tahun " . ($year ?? 'terkait');
                         continue;
                     }
 
@@ -1060,17 +1103,42 @@ class ApiController extends Controller
 
             // Helper to get cell value
             $rows = [];
-            foreach ($sheetXml->sheetData->row as $row) {
+            foreach ($sheetXml->sheetData->row as $xmlRow) {
                 $rowData = [];
-                $cellIndex = 0;
-                foreach ($row->c as $cell) {
+                foreach ($xmlRow->c as $cell) {
                     $val = (string) $cell->v;
                     // Handle shared strings
                     if (isset($cell['t']) && (string) $cell['t'] === 's') {
                         $val = $sharedStrings[(int) $val] ?? '';
                     }
-                    $rowData[] = $val;
+
+                    // Handle column index using 'r' attribute (e.g. "A1", "C5")
+                    if (isset($cell['r'])) {
+                        $ref = (string) $cell['r'];
+                        // Extract column letters (e.g., "ABC" from "ABC123")
+                        if (preg_match('/^([A-Z]+)/', $ref, $matches)) {
+                            $colIndex = $this->columnLetterToIndex($matches[1]);
+                            $rowData[$colIndex] = $val;
+                        }
+                    } else {
+                        // Fallback to sequential if 'r' is missing (shouldn't happen in standard .xlsx)
+                        $rowData[] = $val;
+                    }
                 }
+
+                // Fill missing indices with empty strings to ensure count matches header if needed,
+                // but at least ensure we have a consistent array.
+                // find max key to normalize
+                if (!empty($rowData)) {
+                    $maxKey = max(array_keys($rowData));
+                    for ($i = 0; $i <= $maxKey; $i++) {
+                        if (!isset($rowData[$i])) {
+                            $rowData[$i] = '';
+                        }
+                    }
+                    ksort($rowData);
+                }
+
                 $rows[] = $rowData;
             }
 
