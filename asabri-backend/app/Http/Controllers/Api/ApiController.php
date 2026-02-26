@@ -35,6 +35,10 @@ class ApiController extends Controller
             }
         }
 
+        if (strtolower($user->status ?? '') === 'nonaktif') {
+            return response()->json(['message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi admin.'], 403);
+        }
+
         $token = $user->createToken('asabri-token')->plainTextToken;
         return response()->json(['token' => $token, 'user' => $user]);
     }
@@ -265,7 +269,47 @@ class ApiController extends Controller
         $surat = SuratMasuk::find($id);
         if (!$surat)
             return response()->json(['message' => 'Not Found'], 404);
-        $surat->update($request->all());
+        try {
+            $validated = $request->validate([
+                'tanggal_terima_surat' => 'nullable|date',
+                'tanggal_surat_masuk' => 'nullable|date',
+                'pengirim' => 'nullable|string',
+                'perihal' => 'nullable|string',
+                'sumber_berkas' => 'nullable|string',
+                'no_surat' => 'nullable|string',
+                'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', // 50MB max
+                'keterangan' => 'nullable|string',
+                'status' => 'nullable|string',
+            ]);
+
+            // Ensure we don't save nulls for required DB columns if they are present in request but null
+            if (array_key_exists('pengirim', $validated))
+                $validated['pengirim'] = $validated['pengirim'] ?? '-';
+            if (array_key_exists('perihal', $validated))
+                $validated['perihal'] = $validated['perihal'] ?? '-';
+            if (array_key_exists('sumber_berkas', $validated))
+                $validated['sumber_berkas'] = $validated['sumber_berkas'] ?? 'internal';
+
+            // Handle File Replacement
+            if ($request->hasFile('file')) {
+                // Delete old file if exists
+                if ($surat->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($surat->file_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($surat->file_path);
+                }
+
+                $file = $request->file('file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('surat-masuk', $filename, 'public');
+                $validated['file_path'] = $path;
+            }
+
+            $surat->update($validated);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Validasi Gagal', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error in updateSuratMasuk: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal memperbarui surat masuk'], 500);
+        }
         return response()->json($surat);
     }
 
@@ -395,7 +439,7 @@ class ApiController extends Controller
                 'keterangan' => 'nullable|string',
                 'no_resi' => 'nullable|string',
                 'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:51200',
-                'file_resi' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // Max 10MB, allow images/docs
+                'file_resi' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:51200', // Max 50MB, allow images/docs
             ]);
 
             // Ensure we don't save nulls for required DB columns if they are present in request but null
@@ -583,7 +627,7 @@ class ApiController extends Controller
             'username' => $user->username,
             'role' => $user->role,
             'status' => $user->status ?? 'aktif',
-            'ttd_path' => $user->ttd_path ? asset('storage/' . $user->ttd_path) : null,
+            'ttd_path' => $user->ttd_path ? '/storage/' . $user->ttd_path : null,
         ]);
     }
 

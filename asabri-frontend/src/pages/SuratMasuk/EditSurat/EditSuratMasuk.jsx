@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Calendar, Upload } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -10,6 +10,7 @@ const EditSuratMasuk = () => {
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const fileInputRef = useRef(null);
 
     const [options, setOptions] = useState({
         sumber_berkas: [],
@@ -79,25 +80,37 @@ const EditSuratMasuk = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            setFormData(prev => ({ ...prev, file: files[0] }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const payload = {
-                pengirim: formData.pengirim,
-                no_surat: formData.no_surat,
-                tanggal_terima_surat: formData.tanggal_terima_surat,
-                tanggal_surat_masuk: formData.tanggal_surat_masuk,
-                sumber_berkas: formData.sumber_berkas,
-                perihal: formData.perihal,
-                keterangan: formData.keterangan
-            };
+            const payload = new FormData();
+            payload.append('pengirim', formData.pengirim);
+            payload.append('no_surat', formData.no_surat);
+            if (formData.tanggal_terima_surat) payload.append('tanggal_terima_surat', formData.tanggal_terima_surat);
+            if (formData.tanggal_surat_masuk) payload.append('tanggal_surat_masuk', formData.tanggal_surat_masuk);
+            if (formData.sumber_berkas) payload.append('sumber_berkas', formData.sumber_berkas);
+            if (formData.perihal) payload.append('perihal', formData.perihal);
+            if (formData.keterangan) payload.append('keterangan', formData.keterangan);
 
-            await api.put(`/surat-masuk/${id}`, payload);
+            if (formData.file) {
+                payload.append('file', formData.file);
+            }
+
+            // Required for Laravel to treat it as a PUT request when using FormData
+            payload.append('_method', 'PUT');
+
+            await api.post(`/surat-masuk/${id}`, payload, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
@@ -232,11 +245,23 @@ const EditSuratMasuk = () => {
                     </div>
 
                     <div className="form-row">
-                        <label>Pilih Dokumen</label>
-                        <div className="upload-box">
-                            <Upload size={24} className="upload-icon" />
-                            <p>Klik untuk upload atau drag & drop file</p>
-                            <span className="upload-hint">(Max Upload File 50 MB)</span>
+                        <label>Pilih Dokumen Baru (Abaikan jika tidak ingin mengganti file)</label>
+                        <div className="upload-box" style={{ padding: '24px' }}>
+                            <input
+                                type="file"
+                                name="file"
+                                onChange={handleChange}
+                                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                className="file-input-visible"
+                                id="file-upload"
+                                style={{ display: 'block', margin: '0 auto', fontSize: '14px' }}
+                            />
+                            <div style={{ marginTop: '16px' }}>
+                                <p style={{ fontSize: '14px', color: '#64748b' }}>
+                                    {formData.file ? formData.file.name : 'Saat ini dokumen lama masih tersimpan'}
+                                </p>
+                                <span className="upload-hint">(Max Upload File 50 MB)</span>
+                            </div>
                         </div>
                     </div>
                 </div>

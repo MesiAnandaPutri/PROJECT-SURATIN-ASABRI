@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Truck, PackageCheck, PackageX } from 'lucide-react';
+import Swal from 'sweetalert2';
 import api from '../../../services/api';
 import './InputResiModal.css';
 
@@ -48,6 +49,13 @@ const InputResiModal = ({ isOpen, onClose, onSuccess, surat }) => {
             onClose();
         } catch (error) {
             console.error('Error updating resi:', error);
+            const msg = error.response?.data?.message || 'Gagal menyimpan resi. Pastikan ukuran file tidak melebihi batas atau format file benar.';
+            Swal.fire({
+                icon: 'error',
+                title: 'Upload Gagal',
+                text: msg,
+                confirmButtonColor: '#002966'
+            });
         } finally {
             setLoading(false);
         }
@@ -115,7 +123,7 @@ const InputResiModal = ({ isOpen, onClose, onSuccess, surat }) => {
                                     className="resi-file-input"
                                 />
                                 <small className="help-text" style={{ marginTop: '4px', display: 'block' }}>
-                                    Max 10MB. (PDF, JPG, PNG, DOCX)
+                                    Max 50MB. (PDF, JPG, PNG, DOCX)
                                 </small>
                             </div>
 
